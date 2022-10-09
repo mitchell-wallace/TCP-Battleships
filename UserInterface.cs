@@ -1,15 +1,17 @@
+using System.Data.Common;
 using System.Text.RegularExpressions;
 
 namespace Battleships {
 
-    public class UserInterface {
+    internal class UserInterface {
 
         static bool StillPlaying = true; // loop break variable
         static string whoseTurn = ""; // solely for display
         static int turnNo = 1; // primarily for display; simpler to start from 1
         static GameGrids gg = new GameGrids(); // data structure for game data
 
-        static Regex rg = new Regex(@"^[A-J][1-9]0?$"); // regex pattern for validating input
+        static Regex ShootingRegex = new Regex(@"^[A-J][1-9]0?$"); // regex pattern for validating shooting input
+        static Regex PlacementRegex = new Regex(@"^[A-J][1-9]0?[HV]$"); // regex pattern for validating ship placement input
 
         public static void Play(bool isPlayer1) { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
             Console.WriteLine("You may send the message 'END' at any time to end the game.\n");
@@ -45,17 +47,14 @@ namespace Battleships {
 
         }
 
-        public static void PlaceShips() // TODO: implement ship placement in UI
-        {
-            Console.WriteLine("You cannot yet manually place ships!");
-        }
+
 
         public static void YourTurn()
         {
             bool validInput = false;
             string shot = "";
 
-            int column = -1; // declare column+row before loop
+            int column = -1; // declare column+row before loop; -1 represents invalid
             int row = -1;
 
             while (!validInput) // receive user input
@@ -78,7 +77,7 @@ namespace Battleships {
                 }
 
                 // regex validation
-                if (!rg.IsMatch(shot))
+                if (!ShootingRegex.IsMatch(shot))
                 {
                     Console.WriteLine("Invalid input! Enter a column [A-J] followed by a row [1-10] like this:");
                     Console.WriteLine("\t>A1");
@@ -86,7 +85,7 @@ namespace Battleships {
                 }
 
                 // duplicate shot check
-                column = ColumnNo(shot[0]) - 1;
+                column = CharTransform.ColumnNo(shot[0]) - 1;
                 row = int.Parse(shot[1..].ToString()) - 1;
                 if (gg.IsValidTarget(column, row)) validInput = true;
                 else Console.WriteLine("You have already fired at this square! Try another target.");
@@ -118,67 +117,101 @@ namespace Battleships {
 
             OpponentConnection.ResponseToOpponentShot(result);
 
-            Console.WriteLine($"Opponent fired at {ColumnChar(shot[0]+1)}{shot[1]+1} and {result}!");
+            Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0]+1)}{shot[1]+1} and {result}!");
 
         }
 
-        public static int ColumnNo(char column)
+        public static void PlaceShips() // TODO: implement ship placement in UI
         {
-            switch (column)
-            {
-                case 'A':
-                    return 1;
-                case 'B':
-                    return 2;
-                case 'C':
-                    return 3;
-                case 'D':
-                    return 4;
-                case 'E':
-                    return 5;
-                case 'F':
-                    return 6;
-                case 'G':
-                    return 7;
-                case 'H':
-                    return 8;
-                case 'I':
-                    return 9;
-                case 'J':
-                    return 10;
-                default: return -1; // -1 indicates invalid
-            }
+            //Console.WriteLine("You cannot yet manually place ships!");
+
+            Console.WriteLine("First, you must place your ships on your grid.\n" +
+                "Ships are placed by entering the cell in the top left of the desired" +
+                "position, and can be placed either horizontally (H) or vertically (V).\n" +
+                "An example input would be A1H, where the ship would be added horizontally," +
+                "starting from cell A1 and going to the right.\n" +
+                "Ships cannot be placed on top of each other.\n");
+
+            Console.WriteLine("Placing first ship - Aircraft Carrier, 5 blocks long.");
+            PlaceOneShip('A');
+            Console.WriteLine("Placing second ship - Battleship, 4 blocks long.");
+            PlaceOneShip('B');
+            Console.WriteLine("Placing third ship - Cruiser, 3 blocks long.");
+            PlaceOneShip('C');
+            Console.WriteLine("Placing fourth ship - Patrol Boat, 2 blocks long.");
+            PlaceOneShip('P');
+            Console.WriteLine("Placing fifth and final ship - Submarine, 3 blocks long.");
+            PlaceOneShip('S');
         }
 
-        public static char ColumnChar(int column)
+        public static void PlaceOneShip(char type)
         {
-            switch (column)
+            string pos = "";
+            bool validInput = false;
+            int size = CharTransform.ShipSize(type);
+
+            int column = -1; // declare column+row before loop; -1 represents invalid
+            int row = -1;
+            bool isHorizontal = true; // horizontal or vertical placement
+
+            while (!validInput)
             {
-                case 1:
-                    return 'A';
-                case 2:
-                    return 'B';
-                case 3:
-                    return 'C';
-                case 4:
-                    return 'D';
-                case 5:
-                    return 'E';
-                case 6:
-                    return 'F';
-                case 7:
-                    return 'G';
-                case 8:
-                    return 'H';
-                case 9:
-                    return 'I';
-                case 10:
-                    return 'J';
-                default: return '?'; // -1 indicates invalid
+                // receive input
+                Console.Write("Enter the desired position:\n\t>");
+                pos = Console.ReadLine()!;
+
+                // validate input
+
+                // check for null
+                if (pos is null) continue;
+
+                // regex validation
+                pos = pos.ToUpper().Replace(" ", "").Replace("\t", "");
+                if (!PlacementRegex.IsMatch(pos))
+                {
+                    Console.WriteLine("Invalid input! Enter a column [A-J] followed by a row [1-10]\n" +
+                        "and either a H or V like this::");
+                    Console.WriteLine("\t>A1H");
+                    continue;
+                }
+
+                // position clash check
+                column = CharTransform.ColumnNo(pos[0]) - 1;
+                row = int.Parse(pos[1..^1].ToString()) - 1;
+                isHorizontal = (pos[^1] == 'H');
+
+                bool positionError = false;
+                for (int i = 0; i < size; i++)
+                {
+                    if (isHorizontal) // if placing horizontally
+                    {
+                        if (gg.GetCell(column + i, row, true) != ' ')
+                        {
+                            Console.WriteLine($"Invalid input! This placement clashes with your " +
+                                $"{CharTransform.ShipType(gg.GetCell(column + i, row, true))}");
+                            positionError = true;
+                            break;
+                        }
+                    }
+                    else // if placing vertically
+                    {
+                        if (gg.GetCell(column, row + i, true) != ' ')
+                        {
+                            Console.WriteLine($"Invalid input! This placement clashes with your " +
+                                $"{CharTransform.ShipType(gg.GetCell(column, row + i, true))}");
+                            positionError = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!positionError) validInput = true;
             }
+
+            gg.PlaceShip(column, row, isHorizontal, type);
+            Console.WriteLine($"{CharTransform.ShipType(type)} placed successfully!\n\n" +
+                $"{gg.ToString(true)}");
         }
-
-
 
     }
 }

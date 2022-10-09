@@ -18,7 +18,9 @@ namespace Battleships {
     //      lowercase indicates a hit
     //      'X' = A sunken ship
 
-    public class GameGrids {
+    // input validation is all to be handled in UserInterface
+
+    internal class GameGrids {
 
         private char[,] firingGrid = new char[10, 10]; // grid marking your history of firing at the opponent's ships
         private char[,] homeGrid = new char[10, 10]; // grid marking the position of your own ships
@@ -79,9 +81,23 @@ namespace Battleships {
             }
         }
 
-        public int PlaceShip(int column, int row, bool isHorizontal) // TODO: implement ship placement on grid
+        public void PlaceShip(int column, int row, bool isHorizontal, char type) // TODO: implement ship placement on grid
         {
-            return 1;
+            int size = CharTransform.ShipSize(type);
+
+            for (int i = 0; i < size; i++)
+            {
+                if (isHorizontal)
+                    homeGrid[column + i, row] = type;
+                else
+                    homeGrid[column, row + i] = type;
+            }
+        }
+
+        public char GetCell(int column, int row, bool isHomeGrid)
+        {
+            if (isHomeGrid) return homeGrid[column, row];
+            else return firingGrid[column, row];
         }
 
         public override string ToString() {
@@ -106,6 +122,50 @@ namespace Battleships {
 
                 sb.Append("\n");
             }
+            return sb.ToString();
+        }
+
+        public string ToString(bool isHomeGrid) // for displaying only a single grid
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (isHomeGrid)
+            {
+                sb.Append("   ~~~ Y O U R    S H I P S ~~~\n");
+                sb.Append("   A  B  C  D  E  F  G  H  I  J\n");
+                for (int i = 0; i < 10; i++)
+                {
+
+                    sb.Append((i + 1) + " ");
+                    if (i != 9) sb.Append(" ");
+
+                    for (int j = 0; j < 10; j++)
+                    {
+                        sb.Append(homeGrid[j, i] + "  ");
+                    }
+
+                    sb.Append("\n");
+                }
+            }
+            else
+            {
+                sb.Append("    ~~~  OPPONENT'S SHIPS  ~~~\n");
+                sb.Append("   A  B  C  D  E  F  G  H  I  J\n");
+                for (int i = 0; i < 10; i++)
+                {
+
+                    sb.Append("      " + (i + 1) + " ");
+                    if (i != 9) sb.Append(" ");
+
+                    for (int j = 0; j < 10; j++)
+                    {
+                        sb.Append(firingGrid[j, i] + "  ");
+                    }
+
+                    sb.Append("\n");
+                }
+            }
+
             return sb.ToString();
         }
     }

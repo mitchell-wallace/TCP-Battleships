@@ -1,6 +1,6 @@
 namespace Battleships{
 
-    public class OpponentConnection{ // TODO: implement actual connection to opponent
+    internal class OpponentConnection{ // TODO: implement actual connection to opponent
 
         private static int counter = 0;
 
