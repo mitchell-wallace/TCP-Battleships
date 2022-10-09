@@ -2,15 +2,26 @@ using System.Text;
 
 namespace Battleships {
 
-    // character meanings:
+    // firingGrid char meanings:
     //      ' ' = unknown
     //      'X' = hit
     //      '~' = miss
 
+    // homeGrid char meanings:
+    //      ' ' = empty
+    //      '~' = missed shot by opponent
+    //      'A' = Aircraft carrier (5 blocks)
+    //      'B' = Battleship (4 blocks)
+    //      'C' = Cruiser (3 blocks)
+    //      'P' = Patrol boat (2 blocks)
+    //      'S' = Submarine (3 blocks)
+    //      lowercase indicates a hit
+    //      'X' = A sunken ship
+
     public class GameGrids {
 
-        char[,] firingGrid = new char[10, 10]; // grid marking your history of firing at the opponent's ships
-        char[,] homeGrid = new char[10, 10]; // grid marking the position of your own ships
+        private char[,] firingGrid = new char[10, 10]; // grid marking your history of firing at the opponent's ships
+        private char[,] homeGrid = new char[10, 10]; // grid marking the position of your own ships
 
         public GameGrids() {
             for (int i = 0; i < 10; i++) {
@@ -22,98 +33,80 @@ namespace Battleships {
         }
 
 
-        public bool FireShot(char column, int row) { // use this method when you are shooting at your opponent's ships
-            int columnNo = ColumnNo(column);
+        public int FireShot(int column, int row) { // use this method when you are shooting at your opponent's ships
 
-            // check if valid square
-            if (columnNo == -1 || row > 10 || row < 1) {
-                Console.WriteLine("ERROR: Invalid cell address!"); // TODO: decide on a way to re-prompt for a new shot
-                return false;
+            
+
+            // check if hit and store result
+            if (OpponentConnection.FireAtOpponent(column, row)) {
+                firingGrid[column, row] = 'X';
+                return 1;
+            } 
+            else {
+                firingGrid[column, row] = '~';
+                return -1;
             }
-            if (firingGrid[columnNo, row] != ' ') {
+        }
+
+        public bool IsValidTarget(int column, int row)
+        {
+            if (firingGrid[column, row] != ' ')
+            {
                 Console.WriteLine("ERROR: Cell has already been tried!");
                 return false;
-            } 
-
-            // check if hit and store result
-            if (OpponentConnection.TryHit(columnNo, row)) {
-                firingGrid[columnNo, row] = 'X';
-                return true;
-            } 
-            else {
-                firingGrid[columnNo, row] = '~';
-                return false;
             }
+            return true;
         }
 
-        public bool ReceiveShot(char column, int row) { // use this method when your opponent is shooting at your ships
-            int columnNo = ColumnNo(column);
+        public bool ReceiveShot(int[] coords) // helper method for more concise code elsewhere
+        {
+            // assume valid array as program will validate before sending FIRE message
+            return ReceiveShot(coords[0], coords[1]);
+        }
 
-            // check if valid square
-            if (columnNo == -1 || row > 10 || row < 1) {
-                Console.WriteLine("ERROR: Invalid cell address!");
-                return false;
-            }
+        public bool ReceiveShot(int column, int row) { // use this method when your opponent is shooting at your ships
+
+            // assume valid square as program will validate before sending FIRE message
 
             // check if hit and store result
-            if (firingGrid[columnNo, row] == ' ') {
+            if (homeGrid[column, row] == ' ') {
+                homeGrid[column, row] = '~'; // mark as missed shot by opponent
                 return false;
             } 
             else {
+                homeGrid[column, row] = homeGrid[column, row].ToString().ToLower()[0];
                 return true;
             }
         }
 
-        public override string ToString() { // TODO: also display own grid -- done?
+        public int PlaceShip(int column, int row, bool isHorizontal) // TODO: implement ship placement on grid
+        {
+            return 1;
+        }
+
+        public override string ToString() {
             StringBuilder sb = new StringBuilder();
             sb.Append("   ~~~ Y O U R    S H I P S ~~~            ~~~  OPPONENT'S SHIPS  ~~~\n");
             sb.Append("   A  B  C  D  E  F  G  H  I  J           A  B  C  D  E  F  G  H  I  J\n");
             for (int i = 0; i < 10; i++) {
 
                 sb.Append((i+1) + " ");
-                if (i != 10) sb.Append(" ");
+                if (i != 9) sb.Append(" ");
                 
                 for (int j = 0; j < 10; j++) {
-                    sb.Append(homeGrid[i, j] + "  ");
+                    sb.Append(homeGrid[j, i] + "  ");
                 }
 
                 sb.Append("      " + (i+1) + " ");
-                if (i != 10) sb.Append(" ");
+                if (i != 9) sb.Append(" ");
 
                 for (int j = 0; j < 10; j++) {
-                    sb.Append(firingGrid[i, j] + "  ");
+                    sb.Append(firingGrid[j, i] + "  ");
                 }
 
                 sb.Append("\n");
             }
             return sb.ToString();
         }
-
-        public int ColumnNo(char column) {
-            switch (column) {
-                case 'a': case 'A':
-                    return 1;
-                case 'b': case 'B':
-                    return 2;
-                case 'c': case 'C':
-                    return 3;
-                case 'd': case 'D':
-                    return 4;
-                case 'e': case 'E':
-                    return 5;
-                case 'f': case 'F':
-                    return 6;
-                case 'g': case 'G':
-                    return 7;
-                case 'h': case 'H':
-                    return 8;
-                case 'i': case 'I':
-                    return 9;
-                case 'j': case 'J':
-                    return 10;
-                default: return -1;
-            }
-        }
-
     }
 }

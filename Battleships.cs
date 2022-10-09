@@ -12,7 +12,7 @@ namespace Battleships {
             Console.WriteLine("Waiting for opponent to join... <NOT IMPLEMENTED>");
             Console.WriteLine("Now playing against: <DUMBEST POSSIBLE OPPONENT>");
 
-            UserInterface.Play();
+            UserInterface.Play(true); // FIXME for testing, we are player1
 
         }
 
