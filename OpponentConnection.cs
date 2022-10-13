@@ -13,7 +13,7 @@ namespace Battleships{
             return false;
         }
 
-        public static async Task<bool> ListenAsHost() {
+        public static async void ListenAsHost() {
 
             var ipEndPoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
             TcpListener listener = new(ipEndPoint);
@@ -38,6 +38,8 @@ namespace Battleships{
 
                 var message = Encoding.UTF8.GetString(buffer, 0, received);
                 Console.WriteLine($"Message received: \"{message}\"");
+                Battleships.PlayerNo = 1;
+                // TODO: actually check the logic that the game starts after this point?!?!
             }
             finally
             {
@@ -48,15 +50,13 @@ namespace Battleships{
                 // PLACEHOLDER
             });
 
-
-            return true;
         }
 
         public static async void InitiateAsClient() {
             var ipEndPoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
 
             using TcpClient client = new();
-            await client.ConnectAsync(ipEndPoint);
+            await client.ConnectAsync(ipEndPoint); // this is the line that is breaking currently
             await using NetworkStream stream = client.GetStream();
 
             // *~*~* SENDING MESSAGE *~*~*

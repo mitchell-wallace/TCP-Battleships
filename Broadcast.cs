@@ -16,13 +16,23 @@ namespace Battleships
         private static bool messageReceived = false;
         private static bool contacted = false; // indicates whether a broadcast message has been received
 
-        private static TimeSpan ttw = TimeSpan.FromSeconds(30);
+        private static TimeSpan ttw = TimeSpan.FromSeconds(6);
 
         public static void Connect()
         {
             udpClient = new UdpClient(Battleships.BcPort);
+            // udpClient = new UdpClient();
             udpEndPoint = new IPEndPoint(Battleships.BcAddress, Battleships.BcPort);
             udpState = new UdpState(udpClient, udpEndPoint);
+
+            // manually set some properties because we want to be sure they're set correctly
+            // actually I think this breaks stuff.........
+            // udpClient.EnableBroadcast = true;
+            // udpClient.Ttl = 96;
+            // udpClient.ExclusiveAddressUse = false;
+            // udpClient.Client.Bind(udpEndPoint);
+
+            Thread tcpListen = new Thread(new ThreadStart(OpponentConnection.ListenAsHost));
 
             while (!contacted)
             {
@@ -35,12 +45,10 @@ namespace Battleships
 
         public static async void Listen() // we are trying to do BeginReceive and EndReceive here
         {
+            if (Battleships.PlayerNo != 0) return;
+
             Console.WriteLine("Looking for existing game host... <WIP>"); // TODO finish and remove <WIP> text
             var asyncResult = udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), udpState);
-
-            // if (await OpponentConnection.ListenAsHost()) { // will this just wait indefinitely?????
-            //     Battleships.PlayerNo = 1;
-            // }
 
             Console.WriteLine("Listening.....");
             asyncResult.AsyncWaitHandle.WaitOne(ttw);
@@ -78,7 +86,7 @@ namespace Battleships
 
             Console.WriteLine($"Broadcasting message: {msg};");
             Console.WriteLine($"ttl: {udpClient.Ttl}; exclusive address use: {udpClient.ExclusiveAddressUse};" +
-                $"enable broadcase: {udpClient.EnableBroadcast}; available: {udpClient.Available}");
+                $"enable broadcast: {udpClient.EnableBroadcast}; available: {udpClient.Available}");
         }
 
         public static void ReceiveCallback(IAsyncResult ar)
@@ -99,7 +107,9 @@ namespace Battleships
                 Battleships.AgreedTcpPort = int.Parse(receiveString[11..]); // "NEW PLAYER:".Length = 11; we extract port only
                 OpponentConnection.InitiateAsClient();
             }
-            else Console.WriteLine("Own message received...");
+            else {
+                Console.WriteLine("Own message received...");
+            }
 
         }
 
