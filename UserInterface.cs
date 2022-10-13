@@ -125,10 +125,15 @@ namespace Battleships {
         {
             //Console.WriteLine("You cannot yet manually place ships!");
 
+            // info display
+            string info1 = $"======= Placing ships : {Battleships.PlayerName} =======";
+            string info2 = new string('=', info1.Length);
+            Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
+
             Console.WriteLine("First, you must place your ships on your grid.\n" +
                 "Ships are placed by entering the cell in the top left of the desired" +
                 "position, and can be placed either horizontally (H) or vertically (V).\n" +
-                "An example input would be A1H, where the ship would be added horizontally," +
+                "An example input would be A1H, where the ship would be added horizontally, " +
                 "starting from cell A1 and going to the right.\n" +
                 "Ships cannot be placed on top of each other.\n");
 
