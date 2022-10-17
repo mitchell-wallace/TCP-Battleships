@@ -12,6 +12,9 @@
             connected party did not properly respond after a period of time, or established connection failed because 
             connected host has failed to respond.
         > so, we DO need to get the IP address of the host from the UDP packet
+            > uh, it just gives us 255.255.255.255 ...
+            > Maybe we can just assume that the broadcast address is valid for the opponent's IP addresss?
+            > Since Listen2() and Receive2() are not helpful, it's not worth fixing them, but I'll 'archive' it into source control
         > Then we need to get them to actually respond!
         > I reckon that once this initial connection is working, all the other stuff will come a lot easier
 ☐ manually set TTL to 128, Exclusive Address Use to false
