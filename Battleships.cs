@@ -38,6 +38,7 @@ namespace Battleships {
                 {
                     Console.WriteLine("Welcome! Did you know you can set a custom " +
                         "player name using the third argument on the command line?");
+                    RandomisePlayerName();
                 }
                     
             }    
@@ -45,21 +46,26 @@ namespace Battleships {
             {
                 Console.WriteLine("No command line arguments received; please specify broadcast address and port." +
                 "\nAttempting to play using default settings; press CTRL+C to cancel.");
+                RandomisePlayerName();
             }
-            Console.WriteLine($"Broadcast address: {BcAddress} | Broadcast port: {BcPort} | Randomised TCP port: {RandomTcpPort}\n");
+            Console.WriteLine($"Broadcast address: {BcAddress} | Broadcast port: {BcPort} | " +
+                $"Randomised TCP port: {RandomTcpPort}\nPlayer name: {PlayerName}\n");
 
             // Game search
             
-            Broadcast.Connect();
-            Console.WriteLine("No existing game found; hosting new game");
-            Console.WriteLine("Waiting for opponent to join... <NOT IMPLEMENTED>");
-            Console.WriteLine("Now playing against: <DUMBEST POSSIBLE OPPONENT>");
+            do {
+                Broadcast.Connect();
+            } while (PlayerNo == 0);
+            
+            // Console.WriteLine("No existing game found; hosting new game");
+            // Console.WriteLine("Waiting for opponent to join... <NOT IMPLEMENTED>");
+            Console.WriteLine($"\nNow playing as player #{PlayerNo}");
 
-            UserInterface.Play(true); // FIXME for testing, we are player1; this won't work with two real players!
+            UserInterface.Play(PlayerNo == 1);
 
         }
 
-        public static void Connect()
+        public static void Connect() // TODO: sample code, delete when stuff is working
         {
             UdpClient udpClient = new UdpClient();
             udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, BcPort));
@@ -80,7 +86,9 @@ namespace Battleships {
             task.Wait();
         }
 
-
+        private static void RandomisePlayerName() {
+            PlayerName = "Battleships_Player" + new Random().Next(100, 999);
+        }
 
 
     }

@@ -9,12 +9,11 @@ namespace Battleships {
         static string whoseTurn = ""; // solely for display
         static int turnNo = 1; // primarily for display; simpler to start from 1
         static GameGrids gg = new GameGrids(); // data structure for game data
-
         static Regex ShootingRegex = new Regex(@"^[A-J][1-9]0?$"); // regex pattern for validating shooting input
         static Regex PlacementRegex = new Regex(@"^[A-J][1-9]0?[HV]$"); // regex pattern for validating ship placement input
 
         public static void Play(bool isPlayer1) { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
-            Console.WriteLine("You may send the message 'END' at any time to end the game.\n");
+            Console.WriteLine("You may send the message 'END' at any time to end the game.");
 
             // static variable re-initialisation
             StillPlaying = true;
@@ -42,9 +41,7 @@ namespace Battleships {
                 Console.WriteLine("\n" + gg.ToString());
                 turnNo++;
             }
-
             Console.WriteLine("Game has ended. Thanks for playing!");
-
         }
 
 
@@ -105,7 +102,6 @@ namespace Battleships {
             }
 
             Console.WriteLine();
-
         }
 
         public static void OpponentsTurn()
@@ -118,7 +114,6 @@ namespace Battleships {
             OpponentConnection.ResponseToOpponentShot(result);
 
             Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0]+1)}{shot[1]+1} and {result}!");
-
         }
 
         public static void PlaceShips() // TODO: implement ship placement in UI
@@ -217,6 +212,5 @@ namespace Battleships {
             Console.WriteLine($"{CharTransform.ShipType(type)} placed successfully!\n\n" +
                 $"{gg.ToString(true)}");
         }
-
     }
 }

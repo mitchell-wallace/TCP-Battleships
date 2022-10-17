@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -15,9 +16,8 @@ namespace Battleships
         private static UdpState? udpState;
         private static bool messageReceived = false;
         private static bool contacted = false; // indicates whether a broadcast message has been received
-
+        private static bool firstTry = true; // print extra debug info until first execution of Send()
         private static TimeSpan ttw = TimeSpan.FromSeconds(6);
-
         public static void Connect()
         {
             udpClient = new UdpClient(Battleships.BcPort);
@@ -43,58 +43,74 @@ namespace Battleships
             // this means we also have to already be listening for a TCP message??
         }
 
-        public static async void Listen() // we are trying to do BeginReceive and EndReceive here
+        private static void Listen() // we are trying to do BeginReceive and EndReceive here
         {
+            Debug.Assert(udpClient is not null, "udpClient has not initialised!");
+            Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
+
             if (Battleships.PlayerNo != 0) return;
 
-            Console.WriteLine("Looking for existing game host... <WIP>"); // TODO finish and remove <WIP> text
+            if (firstTry) Console.WriteLine("Looking for existing game host..."); // TODO finish and remove <WIP> text
             var asyncResult = udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), udpState);
 
-            Console.WriteLine("Listening.....");
+            Console.WriteLine("\nListening.....");
             asyncResult.AsyncWaitHandle.WaitOne(ttw);
             if (asyncResult.IsCompleted)
             {
                 try
                 {
-                    IPEndPoint remoteEP = null;
-                    byte[] receivedData = udpClient.EndReceive(asyncResult, ref remoteEP);
+                    // yes, remoteEP is null, and it's okay for it to be null.
+                    IPEndPoint? remoteEP = null;
+                    byte[] receivedData = udpClient.EndReceive(asyncResult, ref remoteEP!);
                     // EndReceive worked and we received data and remote endpoint
-                    Console.WriteLine("Message received; listening over!!");
-                    Thread.Sleep(1000); // debug use only
+                    Console.WriteLine("AsyncResult completed successfully.");
+                    // Thread.Sleep(1000); // debug use only
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Error receiving message; time to broadcast!!");
+                    Console.WriteLine($"Error receiving message; broadcasting...\n{e}");
                     // EndReceive failed
                 }
             }
             else
             {
-                Console.WriteLine("No message received; time to broadcast!!");
+                Console.WriteLine("No message received; broadcasting...");
                 // timeout expired
             }
-
         }
 
-        public static void Send()
+        private static void Send()
         {
+            Debug.Assert(udpClient is not null, "udpClient has not initialised!");
+            Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
             //udpClient.Client.Bind(udpEndPoint);
 
-            var msg = $"NEW PLAYER:{Battleships.RandomTcpPort}";
-            var data = Encoding.UTF8.GetBytes($"NEW PLAYER:{Battleships.RandomTcpPort}");
-            udpClient.Send(data, data.Length, "255.255.255.255", Battleships.BcPort);
+            try {
+                var data = Encoding.UTF8.GetBytes($"NEW PLAYER:{Battleships.RandomTcpPort}");
+                udpClient.Send(data, data.Length, "255.255.255.255", Battleships.BcPort);
+            }
+            catch (Exception e) {
+                Console.WriteLine($"An exception occurred while attempting to broadcast a UDP packet;\n{e}");
+            }
 
-            Console.WriteLine($"Broadcasting message: {msg};");
-            Console.WriteLine($"ttl: {udpClient.Ttl}; exclusive address use: {udpClient.ExclusiveAddressUse};" +
-                $"enable broadcast: {udpClient.EnableBroadcast}; available: {udpClient.Available}");
+            if (firstTry) {
+                var msg = $"NEW PLAYER:{Battleships.RandomTcpPort}";
+                Console.WriteLine($"Broadcasting message: {msg};");
+                Console.WriteLine($"ttl: {udpClient.Ttl}; exclusive address use: {udpClient.ExclusiveAddressUse};" +
+                    $"enable broadcast: {udpClient.EnableBroadcast}; available: {udpClient.Available}");
+                firstTry = false;
+            }
         }
 
-        public static void ReceiveCallback(IAsyncResult ar)
+        private static void ReceiveCallback(IAsyncResult ar)
         {
-            UdpClient u = ((UdpState)(ar.AsyncState)).u;
-            IPEndPoint e = ((UdpState)(ar.AsyncState)).e;
+            // UdpClient u = ((UdpState)(ar.AsyncState)).u;
+            // IPEndPoint e = ((UdpState)(ar.AsyncState)).e;
 
-            byte[] receiveBytes = u.EndReceive(ar, ref e);
+            Debug.Assert(udpClient is not null, "udpClient has not initialised!");
+            Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
+
+            byte[] receiveBytes = udpClient.EndReceive(ar, ref udpEndPoint);
             string receiveString = Encoding.ASCII.GetString(receiveBytes);
 
             if (receiveString != $"NEW PLAYER:{Battleships.RandomTcpPort}"
@@ -110,16 +126,15 @@ namespace Battleships
             else {
                 Console.WriteLine("Own message received...");
             }
-
         }
-
     }
 
     internal class UdpState
     {
+        // can we replace the UdpState object with our static variables?
+            // no, we need it for setting up the asyncResult
         public UdpClient? u;
         public IPEndPoint? e;
-
         public UdpState(UdpClient? u, IPEndPoint? e)
         {
             this.u = u;
