@@ -37,7 +37,7 @@ namespace Battleships
 
             while (!contacted)
             {
-                Listen2();
+                Listen();
                 if (!contacted) Send();
             }
             // we then have to send a TCP message
@@ -78,57 +78,6 @@ namespace Battleships
                 Console.WriteLine("No message received; broadcasting...");
                 // timeout expired
             }
-        }
-
-        private static void Listen2() // this works down at the socket level though... matched with Receive2
-        {
-            Debug.Assert(udpClient is not null, "udpClient has not initialised!");
-            Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
-
-            EndPoint anyEndpoint = new IPEndPoint(IPAddress.Any, Battleships.BcPort);
-            var asyncResult = udpClient.Client.BeginReceiveMessageFrom(bytes, 0, 2048, SocketFlags.None, 
-                ref anyEndpoint, Receive2, null);
-            
-            Console.WriteLine("\nListening.....");
-            asyncResult.AsyncWaitHandle.WaitOne(ttw);
-            if (asyncResult.IsCompleted)
-            {
-                try
-                {
-                    // yes, remoteEP is null, and it's okay for it to be null.
-                    IPEndPoint? remoteEP = null;
-                    byte[] receivedData = udpClient.EndReceive(asyncResult, ref remoteEP!);
-                    // EndReceive worked and we received data and remote endpoint
-                    Console.WriteLine("AsyncResult completed successfully.");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error receiving message; broadcasting...\n{e}");
-                    Thread.Sleep(1000);
-                    // EndReceive failed
-                }
-            }
-            else
-            {
-                Console.WriteLine("No message received; broadcasting...");
-                // timeout expired
-            }
-        }
-
-        private static void Receive2(IAsyncResult ar) 
-        {
-            Debug.Assert(udpClient is not null, "udpClient has not initialised!");
-            Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
-            
-
-            EndPoint ipEndpoint = new IPEndPoint(IPAddress.Any, 9876);
-            IPPacketInformation packetInformation;
-            SocketFlags socketFlags = SocketFlags.None;
-            int numberOfBytesReceived = udpClient.Client.EndReceiveMessageFrom(ar, ref socketFlags, 
-                ref ipEndpoint, out packetInformation);
-
-            string rec = Encoding.ASCII.GetString(bytes);
-            Console.WriteLine($"Received: {rec} | From: {packetInformation.Address}");
         }
 
         private static void Send()
