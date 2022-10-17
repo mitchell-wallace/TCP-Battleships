@@ -9,7 +9,7 @@ namespace Battleships {
     public class Battleships {
 
         public static IPAddress BcAddress = IPAddress.Parse("127.0.0.1"); // UDP Broadcast Address; overwritten by arguments
-        public static IPAddress OpponentAddress = IPAddress.Parse("127.0.0.1"); // TCP opponent address; set to placeholder
+        public static IPAddress OpponentAddress = IPAddress.Parse("127.0.0.1"); // FIXME TCP opponent address; set to placeholder
         public static int BcPort = 9000; // UDP Broadcast Port
         public static int RandomTcpPort = 9001; // Randomised TCP port decided by this instance
         public static int AgreedTcpPort = 9001; // Agreed-upon TCP port by both instances
@@ -28,6 +28,7 @@ namespace Battleships {
             if (args.Length > 1)
             {
                 BcAddress = IPAddress.Parse(args[0]);
+                OpponentAddress = BcAddress; // FIXME this is an assumption
                 BcPort = int.Parse(args[1]);
                 if (args.Length > 2)
                 {

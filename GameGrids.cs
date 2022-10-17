@@ -81,7 +81,7 @@ namespace Battleships {
             }
         }
 
-        public void PlaceShip(int column, int row, bool isHorizontal, char type) // TODO: implement ship placement on grid
+        public void PlaceShip(int column, int row, bool isHorizontal, char type)
         {
             int size = CharTransform.ShipSize(type);
 

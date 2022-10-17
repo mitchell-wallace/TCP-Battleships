@@ -50,7 +50,7 @@ namespace Battleships
 
             if (Battleships.PlayerNo != 0) return;
 
-            if (firstTry) Console.WriteLine("Looking for existing game host..."); // TODO finish and remove <WIP> text
+            if (firstTry) Console.WriteLine("Looking for existing game host...");
             var asyncResult = udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), udpState);
 
             Console.WriteLine("\nListening.....");
@@ -64,7 +64,6 @@ namespace Battleships
                     byte[] receivedData = udpClient.EndReceive(asyncResult, ref remoteEP!);
                     // EndReceive worked and we received data and remote endpoint
                     Console.WriteLine("AsyncResult completed successfully.");
-                    // Thread.Sleep(1000); // debug use only
                 }
                 catch (Exception e)
                 {

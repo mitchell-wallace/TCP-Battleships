@@ -8,7 +8,7 @@ namespace Battleships{
 
         private static int counter = 0;
 
-        public static bool FireAtOpponent(int column, int row) { // TODO: implement ship placement for dummy opponent
+        public static bool FireAtOpponent(int column, int row) {
             if (column == 2) return true;
             return false;
         }
@@ -52,7 +52,7 @@ namespace Battleships{
 
         }
 
-        public static async void InitiateAsClient() {
+        public static async void InitiateAsClient() { // DEBUG this connection is being actively refused...
             var ipEndPoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
 
             using TcpClient client = new();

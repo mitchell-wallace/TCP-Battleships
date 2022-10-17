@@ -116,7 +116,7 @@ namespace Battleships {
             Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0]+1)}{shot[1]+1} and {result}!");
         }
 
-        public static void PlaceShips() // TODO: implement ship placement in UI
+        public static void PlaceShips()
         {
             //Console.WriteLine("You cannot yet manually place ships!");
 

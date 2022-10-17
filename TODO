@@ -1,2 +1,18 @@
 ☐ impelement TCP
+    ☐ obtain IP address from received UDP packet, without breaking stuff
+        > make sure we are connecting to the right IP address
+        > this /shouldn't/ be breaking this locally though...
+        > mm, I think networking might be a bit weird with WSL? I can't seem to get it to receive a message
+        > ok so if I get the windows instance to broadcast on the local IP of the WSL instance (from ifconfig),
+        >   then we get a different, slower error; instead of 
+            >> Unhandled exception. System.Net.Sockets.SocketException (10061): No connection could be made because the 
+            target machine actively refused it.
+        > we instead get
+            >> Unhandled exception. System.Net.Sockets.SocketException (10060): A connection attempt failed because the 
+            connected party did not properly respond after a period of time, or established connection failed because 
+            connected host has failed to respond.
+        > so, we DO need to get the IP address of the host from the UDP packet
+        > Then we need to get them to actually respond!
+        > I reckon that once this initial connection is working, all the other stuff will come a lot easier
 ☐ manually set TTL to 128, Exclusive Address Use to false
+    > I tried, but it broke *shrug*
