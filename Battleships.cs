@@ -9,7 +9,7 @@ namespace Battleships {
     public class Battleships {
 
         public static IPAddress BcAddress = IPAddress.Parse("127.0.0.1"); // UDP Broadcast Address; overwritten by arguments
-        public static IPAddress OpponentAddress = IPAddress.Parse("127.0.0.1"); // FIXME TCP opponent address; set to placeholder
+        public static IPAddress OpponentAddress = IPAddress.Parse("127.0.0.1"); // TCP opponent address
         public static int BcPort = 9000; // UDP Broadcast Port
         public static int RandomTcpPort = 9001; // Randomised TCP port decided by this instance
         public static int AgreedTcpPort = 9001; // Agreed-upon TCP port by both instances
@@ -18,17 +18,18 @@ namespace Battleships {
 
         public static void Main(string[] args) {
 
-            Console.WriteLine("> > > >   B a t t l e s h i p s ! !   < < < <\n\n");
+            Console.WriteLine("\n> > > >   B a t t l e s h i p s ! !   < < < <\n\n");
 
             // Set random TCP port
-            RandomTcpPort = new Random().Next(1024, 65000); // retain this for filtering UDP messages we sent. probably redundant.
+            RandomTcpPort = new Random().Next(1024, 65000); // retain this even after setting agreed port,
+                                                            // for filtering UDP messages we sent. probably redundant.
             AgreedTcpPort = RandomTcpPort; // assume we are host; we will overwrite otherwise
 
             // Broadcast settings
             if (args.Length > 1)
             {
                 BcAddress = IPAddress.Parse(args[0]);
-                OpponentAddress = BcAddress; // FIXME this is an assumption
+                OpponentAddress = BcAddress; // FIXME verify if this assumption is correct
                 BcPort = int.Parse(args[1]);
                 if (args.Length > 2)
                 {

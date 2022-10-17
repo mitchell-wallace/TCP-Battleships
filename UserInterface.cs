@@ -10,7 +10,7 @@ namespace Battleships {
         static int turnNo = 1; // primarily for display; simpler to start from 1
         static GameGrids gg = new GameGrids(); // data structure for game data
         static Regex ShootingRegex = new Regex(@"^[A-J][1-9]0?$"); // regex pattern for validating shooting input
-        static Regex PlacementRegex = new Regex(@"^[A-J][1-9]0?[HV]$"); // regex pattern for validating ship placement input
+        static Regex PlacementRegex = new Regex(@"^[A-J](10|[1-9])$"); // regex pattern for validating ship placement input
 
         public static void Play(bool isPlayer1) { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
             Console.WriteLine("You may send the message 'END' at any time to end the game.");

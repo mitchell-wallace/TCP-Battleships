@@ -53,25 +53,31 @@ namespace Battleships{
         }
 
         public static async void InitiateAsClient() { // DEBUG this connection is being actively refused...
-            var ipEndPoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
+            var opponentEndPoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
 
             using TcpClient client = new();
-            await client.ConnectAsync(ipEndPoint); // this is the line that is breaking currently
-            await using NetworkStream stream = client.GetStream();
+            try {
+                await client.ConnectAsync(opponentEndPoint); // this is the line that is breaking currently
+                await using NetworkStream stream = client.GetStream();
 
-            // *~*~* SENDING MESSAGE *~*~*
-            var message = $"📅 {DateTime.Now} 🕛";
-            var dateTimeBytes = Encoding.UTF8.GetBytes(message);
-            await stream.WriteAsync(dateTimeBytes);
+                // *~*~* SENDING MESSAGE *~*~*
+                var message = $"📅 {DateTime.Now} 🕛";
+                var dateTimeBytes = Encoding.UTF8.GetBytes(message);
+                await stream.WriteAsync(dateTimeBytes);
 
-            Console.WriteLine($"Sent message: \"{message}\"");
+                Console.WriteLine($"Sent message: \"{message}\"");
 
-            // *~*~* RECEIVING MESSAGE *~*~*
-            // var buffer = new byte[1_024];
-            // int received = await stream.ReadAsync(buffer);
+                // *~*~* RECEIVING MESSAGE *~*~*
+                // var buffer = new byte[1_024];
+                // int received = await stream.ReadAsync(buffer);
 
-            // var message = Encoding.UTF8.GetString(buffer, 0, received);
-            // Console.WriteLine($"Message received: \"{message}\"");
+                // var message = Encoding.UTF8.GetString(buffer, 0, received);
+                // Console.WriteLine($"Message received: \"{message}\"");
+            }
+            catch (Exception e) {
+                Console.WriteLine($"An error occurred while initiating connection to Player 1: {e}");
+                Console.WriteLine("\n!IMPORTANT! Restart this client to reattempt connection.");
+            }
         }
 
         public static int[] OpponentFiresAtUs()

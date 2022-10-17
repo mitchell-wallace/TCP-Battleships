@@ -22,12 +22,12 @@ namespace Battleships
         public static void Connect()
         {
             udpClient = new UdpClient(Battleships.BcPort);
-            // udpClient = new UdpClient();
             udpEndPoint = new IPEndPoint(Battleships.BcAddress, Battleships.BcPort);
             udpState = new UdpState(udpClient, udpEndPoint);
 
             // manually set some properties because we want to be sure they're set correctly
             // actually I think this breaks stuff.........
+            // udpClient = new UdpClient();
             // udpClient.EnableBroadcast = true;
             // udpClient.Ttl = 96;
             // udpClient.ExclusiveAddressUse = false;
@@ -69,7 +69,7 @@ namespace Battleships
                 catch (Exception e)
                 {
                     Console.WriteLine($"Error receiving message; broadcasting...\n{e}");
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1000); // DEBUG leaving this here just in case I get an exception loop again
                     // EndReceive failed
                 }
             }
@@ -97,7 +97,7 @@ namespace Battleships
             if (firstTry) {
                 var msg = $"NEW PLAYER:{Battleships.RandomTcpPort}";
                 Console.WriteLine($"Broadcasting message: {msg};");
-                Console.WriteLine($"ttl: {udpClient.Ttl}; exclusive address use: {udpClient.ExclusiveAddressUse};" +
+                Console.WriteLine($"ttl: {udpClient.Ttl}; exclusive address use: {udpClient.ExclusiveAddressUse}; " +
                     $"enable broadcast: {udpClient.EnableBroadcast}; available: {udpClient.Available}");
                 firstTry = false;
             }
