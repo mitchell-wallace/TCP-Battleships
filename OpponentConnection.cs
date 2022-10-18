@@ -13,8 +13,10 @@ namespace Battleships{
             return false;
         }
 
-        public static async void ListenAsHost() {
+        public static async void ListenAsHost() 
+        { // FIXME listen as a loop!!! ---- actually I think TcpListener.Start() doesn't need to be looped
 
+            Console.WriteLine("====> Executing OpponentConnection.ListenAsHost() <====");
             var ipEndPoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
             TcpListener listener = new(ipEndPoint);
 
@@ -48,6 +50,8 @@ namespace Battleships{
 
             await Task.Run( () => { // PLACEHOLDWER
                 // PLACEHOLDER
+                // FIXME we're running this as a thread instead so this whole method can probs
+                // be written as synchronous
             });
 
         }

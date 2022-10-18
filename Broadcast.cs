@@ -32,8 +32,9 @@ namespace Battleships
             // udpClient.Ttl = 96;
             // udpClient.ExclusiveAddressUse = false;
             // udpClient.Client.Bind(udpEndPoint);
-
+            
             Thread tcpListen = new Thread(new ThreadStart(OpponentConnection.ListenAsHost));
+            tcpListen.Start();
 
             while (!contacted)
             {
@@ -69,7 +70,7 @@ namespace Battleships
                 catch (Exception e)
                 {
                     Console.WriteLine($"Error receiving message; broadcasting...\n{e}");
-                    Thread.Sleep(1000); // DEBUG leaving this here just in case I get an exception loop again
+                    Thread.Sleep(1000); // leaving this here just in case I get an exception loop again
                     // EndReceive failed
                 }
             }

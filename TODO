@@ -1,3 +1,6 @@
+P1:
+    ☐ Run OpponentConnection.ListenAsHost() as a loop!
+
 ☐ impelement TCP
     ☐ obtain IP address from received UDP packet, without breaking stuff
         > make sure we are connecting to the right IP address
@@ -17,5 +20,6 @@
             > Since Listen2() and Receive2() are not helpful, it's not worth fixing them, but I'll 'archive' it into source control
         > Then we need to get them to actually respond!
         > I reckon that once this initial connection is working, all the other stuff will come a lot easier
+
 ☐ manually set TTL to 128, Exclusive Address Use to false
     > I tried, but it broke *shrug*
