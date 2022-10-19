@@ -87,38 +87,27 @@ namespace Battleships
                 }
 
                 // duplicate shot check
-                column = CharTransform.ColumnNo(shot[0]) - 1;
+                column = CharTransform.ColumnNo(shot[0]);
                 row = int.Parse(shot[1..].ToString()) - 1;
                 if (gg.IsValidTarget(column, row)) validInput = true;
                 else Console.WriteLine("You have already fired at this square! Try another target.");
 
             }
 
-            // parse input
+            // parse input (? why did I write this?)
 
-
-            // fire shot and display result
-            switch (gg.FireShot(column, row))
-            {
-                case -1: Console.WriteLine("You MISSED!"); break;
-                case 1: Console.WriteLine("You HIT an enemy ship!"); break;
-                case 0: YourTurn(); break; // error result
-                default: break;
-            }
+            // send message
+            string response = OpponentConnection.FireAtOpponent(column, row);
+            Console.WriteLine($"You fired at opponent: {response}");
 
             Console.WriteLine();
         }
 
         public static void OpponentsTurn()
         {
-            int[] shot = OpponentConnection.OpponentFiresAtUs();
-            string result = ""; // TODO: handle SUNK messages
-            if (gg.ReceiveShot(shot)) result = "HIT";
-            else result = "MISSED";
-
-            OpponentConnection.ResponseToOpponentShot(result);
-
-            Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0] + 1)}{shot[1] + 1} and {result}!");
+            Console.WriteLine("Waiting for opponent to shoot...");
+            string result = OpponentConnection.OpponentFiresAtUs();
+            Console.WriteLine($"Opponent fired at us: {result}");
         }
 
         public static void PlaceShipsRandomly()
@@ -244,7 +233,7 @@ namespace Battleships
                 }
 
                 // position clash check
-                column = CharTransform.ColumnNo(pos[0]) - 1;
+                column = CharTransform.ColumnNo(pos[0]);
                 row = int.Parse(pos[1..^1].ToString()) - 1;
                 isHorizontal = (pos[^1] == 'H');
 

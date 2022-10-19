@@ -53,20 +53,10 @@ namespace Battleships
             }
         }
 
-        public int FireShot(int column, int row)
-        { // use this method when you are shooting at your opponent's ships
-
-            // check if hit and store result
-            if (OpponentConnection.FireAtOpponent(column, row))
-            {
-                firingGrid[column, row] = 'X';
-                return 1;
-            }
-            else
-            {
-                firingGrid[column, row] = '~';
-                return -1;
-            }
+        public void FireShot(int column, int row, bool success)
+        { // mark the result of a shot against your opponent
+            if (success) firingGrid[column, row] = 'X';
+            else firingGrid[column, row] = '~';
         }
 
         public bool IsValidTarget(int column, int row)
@@ -79,16 +69,8 @@ namespace Battleships
             return true;
         }
 
-        public bool ReceiveShot(int[] coords) // helper method for more concise code elsewhere
-        {
-            // assume valid array as program will validate before sending FIRE message
-            return ReceiveShot(coords[0], coords[1]);
-        }
-
-        public bool ReceiveShot(int column, int row)
+        public bool ReceiveShot(int column, int row) // return: true is HIT, false is MISS
         { // use this method when your opponent is shooting at your ships
-
-            // assume valid square as program will validate before sending FIRE message
 
             // check if hit and store result
             if (homeGrid[column, row] == ' ')
@@ -116,7 +98,7 @@ namespace Battleships
             }
         }
 
-        public char GetCell(int column, int row, bool isHomeGrid)
+        public char GetCell(int column, int row, bool isHomeGrid = true)
         {
             if (isHomeGrid) return homeGrid[column, row];
             else return firingGrid[column, row];

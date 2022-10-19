@@ -20,7 +20,6 @@ namespace Battleships
 
         public static void Main(string[] args)
         {
-
             Console.WriteLine("\n> > > >   B a t t l e s h i p s ! !   < < < <\n\n");
 
             // Set random TCP port

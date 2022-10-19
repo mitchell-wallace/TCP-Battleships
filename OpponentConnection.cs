@@ -15,13 +15,15 @@ namespace Battleships
         private static NetworkStream? tcpStream = null;
         private static bool ready = false;
 
-        public static bool FireAtOpponent(int column, int row)
+        public static string FireAtOpponent(int column, int row)
         {
-            Send($"FIRE:{CharTransform.ColumnChar(column+1)}{row+1}");
-            string response = Receive();
+            Send($"FIRE:{CharTransform.ColumnChar(column)}{row + 1}");
+            string result = Receive();
 
-            if (column == 2) return true;
-            return false;
+            if (result[0..4] == "MISS") UserInterface.gg.FireShot(column, row, false);
+            else UserInterface.gg.FireShot(column, row, true);
+
+            return result;
         }
 
         public static void Close()
@@ -29,13 +31,28 @@ namespace Battleships
             if (tcpClient is not null) tcpClient.Close();
         }
 
-        public static int[] OpponentFiresAtUs()
+        public static string OpponentFiresAtUs()
         {
-            string response = Receive();
-            Console.WriteLine($"OpponentFiresAtUs(): {response}");
-            Send("HIT:A1");
-            int[] result = { counter % 10, counter / 10 };
-            counter++;
+            string receiveString = Receive();
+            // Console.WriteLine($"OpponentFiresAtUs(): {receiveString}");
+
+            int column = CharTransform.ColumnNo(receiveString[5]);
+            int row = int.Parse(receiveString[6..]) - 1;
+
+
+            string result = "";
+
+            if (UserInterface.gg.ReceiveShot(column, row)) 
+            {
+                result = $"HIT:{receiveString[5..]}";
+            }
+            else 
+            {
+                result = $"MISS:{receiveString[5..]}";
+            }
+
+            Send(result);
+
             return result;
         }
 
@@ -50,7 +67,7 @@ namespace Battleships
 
             await Task.Run(async () =>
             {
-                Console.WriteLine("====> Executing OpponentConnection.InitialListen() <====");
+                // Console.WriteLine("====> Executing OpponentConnection.InitialListen() <====");
                 opponentEndpoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
                 TcpListener listener = new(opponentEndpoint);
 
@@ -66,7 +83,7 @@ namespace Battleships
                     int received = await tcpStream.ReadAsync(buffer);
 
                     message = Encoding.UTF8.GetString(buffer, 0, received);
-                    Console.WriteLine($"Message received: \"{message}\"");
+                    // Console.WriteLine($"Message received: \"{message}\"");
 
                     tcpClient = handler;
                     ready = true;
@@ -81,7 +98,7 @@ namespace Battleships
 
             if (message == "GAME START")
             {
-                Console.WriteLine("====> HostListen complete <====");
+                // Console.WriteLine("====> HostListen complete <====");
                 Battleships.PlayerNo = 1;
                 Broadcast.contacted = true; // this will break the UDP listen-send loop
             }
@@ -111,7 +128,7 @@ namespace Battleships
                 int received = tcpStream.Read(buffer);
 
                 message = Encoding.UTF8.GetString(buffer, 0, received);
-                Console.WriteLine($"Message received: \"{message}\"");
+                // Console.WriteLine($"Message received: \"{message}\"");
             }
             finally
             {
@@ -142,7 +159,7 @@ namespace Battleships
                 var messageBytes = Encoding.UTF8.GetBytes(msg);
                 await stream.WriteAsync(messageBytes);
 
-                Console.WriteLine($"Sent message: \"{msg}\"");
+                // Console.WriteLine($"Sent message: \"{msg}\"");
             }
             catch (Exception e)
             {
@@ -168,7 +185,7 @@ namespace Battleships
                 var messageBytes = Encoding.UTF8.GetBytes(message);
                 await tcpStream.WriteAsync(messageBytes);
 
-                Console.WriteLine($"Sent message: \"{message}\"");
+                // Console.WriteLine($"Sent message: \"{message}\"");
 
                 tcpClient = client;
                 ready = true;

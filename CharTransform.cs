@@ -7,25 +7,25 @@
             switch (column)
             {
                 case 'A':
-                    return 1;
+                    return 0;
                 case 'B':
-                    return 2;
+                    return 1;
                 case 'C':
-                    return 3;
+                    return 2;
                 case 'D':
-                    return 4;
+                    return 3;
                 case 'E':
-                    return 5;
+                    return 4;
                 case 'F':
-                    return 6;
+                    return 5;
                 case 'G':
-                    return 7;
+                    return 6;
                 case 'H':
-                    return 8;
+                    return 7;
                 case 'I':
-                    return 9;
+                    return 8;
                 case 'J':
-                    return 10;
+                    return 9;
                 default: return -1; // -1 indicates invalid
             }
         }
@@ -34,25 +34,25 @@
         {
             switch (column)
             {
-                case 1:
+                case 0:
                     return 'A';
-                case 2:
+                case 1:
                     return 'B';
-                case 3:
+                case 2:
                     return 'C';
-                case 4:
+                case 3:
                     return 'D';
-                case 5:
+                case 4:
                     return 'E';
-                case 6:
+                case 5:
                     return 'F';
-                case 7:
+                case 6:
                     return 'G';
-                case 8:
+                case 7:
                     return 'H';
-                case 9:
+                case 8:
                     return 'I';
-                case 10:
+                case 9:
                     return 'J';
                 default: return '?'; // -1 indicates invalid
             }

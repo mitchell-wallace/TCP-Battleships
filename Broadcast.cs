@@ -116,10 +116,6 @@ namespace Battleships
                 Battleships.AgreedTcpPort = int.Parse(receiveString[11..]); // "NEW PLAYER:".Length = 11; we extract port only
                 OpponentConnection.InitiateAsClient();
             }
-            else
-            {
-                Console.WriteLine("Own message received...");
-            }
         }
     }
 
