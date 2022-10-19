@@ -1,9 +1,11 @@
 using System.Data.Common;
 using System.Text.RegularExpressions;
 
-namespace Battleships {
+namespace Battleships
+{
 
-    internal class UserInterface {
+    internal class UserInterface
+    {
 
         static bool StillPlaying = true; // loop break variable
         static string whoseTurn = ""; // solely for display
@@ -12,7 +14,8 @@ namespace Battleships {
         static Regex ShootingRegex = new Regex(@"^[A-J][1-9]0?$"); // regex pattern for validating shooting input
         static Regex PlacementRegex = new Regex(@"^[A-J](10|[1-9])$"); // regex pattern for validating ship placement input
 
-        public static void Play(bool isPlayer1) { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
+        public static void Play(bool isPlayer1)
+        { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
             Console.WriteLine("You may send the message 'END' at any time to end the game.");
 
             // static variable re-initialisation
@@ -23,7 +26,8 @@ namespace Battleships {
             // PlaceShipsManually();
             PlaceShipsRandomly();
 
-            while (StillPlaying) {
+            while (StillPlaying)
+            {
                 // logic for alternating turns
                 bool yourTurn = (isPlayer1 && turnNo % 2 == 1 || !isPlayer1 && turnNo % 2 == 0);
                 if (yourTurn) whoseTurn = "YOUR turn";
@@ -66,7 +70,7 @@ namespace Battleships {
                 if (shot is null) continue;
 
                 // check for END command
-                shot = shot.ToUpper().Replace(" ","").Replace("\t",""); // cleanup string
+                shot = shot.ToUpper().Replace(" ", "").Replace("\t", ""); // cleanup string
                 if (shot == "END" || shot == "'END'")
                 {
                     Console.WriteLine("Game is being cancelled..."); // TODO: send message to opponent?
@@ -114,10 +118,10 @@ namespace Battleships {
 
             OpponentConnection.ResponseToOpponentShot(result);
 
-            Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0]+1)}{shot[1]+1} and {result}!");
+            Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0] + 1)}{shot[1] + 1} and {result}!");
         }
 
-        public static void PlaceShipsRandomly() 
+        public static void PlaceShipsRandomly()
         {
             gg.Reset();
             Random rand = new();
@@ -132,24 +136,28 @@ namespace Battleships {
             PlaceOneShipRandomly('P', rand);
             // Placing Submarine
             PlaceOneShipRandomly('S', rand);
-            
+
             Console.WriteLine(gg.ToString(true));
         }
 
-        private static void PlaceOneShipRandomly(char type, Random rand) 
+        private static void PlaceOneShipRandomly(char type, Random rand)
         { // reusing rand for efficiency
             bool isHorizontal, positionFound;
             int row, column, size;
 
-            do {
+            do
+            {
                 isHorizontal = (rand.Next(2) == 1);
                 size = CharTransform.ShipSize(type);
                 positionFound = true; // easier to default to true and change if not
 
-                if (isHorizontal) {
+                if (isHorizontal)
+                {
                     row = rand.Next(10);
                     column = rand.Next(10 - size);
-                } else {
+                }
+                else
+                {
                     column = rand.Next(10);
                     row = rand.Next(10 - size);
                 }

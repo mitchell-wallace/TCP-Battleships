@@ -70,7 +70,7 @@
                 default: return "<unknown ship>";
             }
         }
-        
+
         public static int ShipSize(char type)
         {
             switch (type)

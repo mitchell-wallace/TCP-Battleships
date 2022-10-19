@@ -4,9 +4,11 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 
-namespace Battleships {
+namespace Battleships
+{
 
-    public class Battleships {
+    public class Battleships
+    {
 
         public static IPAddress BcAddress = IPAddress.Parse("127.0.0.1"); // UDP Broadcast Address; overwritten by arguments
         public static IPAddress OpponentAddress = IPAddress.Parse("127.0.0.1"); // TCP opponent address
@@ -16,7 +18,8 @@ namespace Battleships {
         public static int PlayerNo = 0; // 0 = unassigned; 1 = host; 2 = client
         public static string PlayerName = "Battleships Player";
 
-        public static void Main(string[] args) {
+        public static void Main(string[] args)
+        {
 
             Console.WriteLine("\n> > > >   B a t t l e s h i p s ! !   < < < <\n\n");
 
@@ -42,8 +45,8 @@ namespace Battleships {
                         "player name using the third argument on the command line?");
                     RandomisePlayerName();
                 }
-                    
-            }    
+
+            }
             else
             {
                 Console.WriteLine("No command line arguments received; please specify broadcast address and port." +
@@ -54,11 +57,12 @@ namespace Battleships {
                 $"Randomised TCP port: {RandomTcpPort}\nPlayer name: {PlayerName}\n");
 
             // Game search
-            
-            do {
+
+            do
+            {
                 Broadcast.Connect();
             } while (PlayerNo == 0);
-            
+
             // Console.WriteLine("No existing game found; hosting new game");
             // Console.WriteLine("Waiting for opponent to join... <NOT IMPLEMENTED>");
             Console.WriteLine($"\nNow playing as player #{PlayerNo}");
@@ -88,7 +92,8 @@ namespace Battleships {
             task.Wait();
         }
 
-        private static void RandomisePlayerName() {
+        private static void RandomisePlayerName()
+        {
             PlayerName = "Battleships_Player" + new Random().Next(100, 999);
         }
 

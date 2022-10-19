@@ -1,6 +1,7 @@
 using System.Text;
 
-namespace Battleships {
+namespace Battleships
+{
 
     // firingGrid char meanings:
     //      ' ' = unknown
@@ -20,39 +21,49 @@ namespace Battleships {
 
     // input validation is all to be handled in UserInterface
 
-    internal class GameGrids {
+    internal class GameGrids
+    {
 
         private char[,] firingGrid = new char[10, 10]; // grid marking your history of firing at the opponent's ships
         private char[,] homeGrid = new char[10, 10]; // grid marking the position of your own ships
 
-        public GameGrids() {
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 10; j++) {
+        public GameGrids()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
                     firingGrid[i, j] = ' ';
                     homeGrid[i, j] = ' ';
                 }
             }
         }
 
-        public void Reset() {
+        public void Reset()
+        {
             firingGrid = new char[10, 10];
             homeGrid = new char[10, 10];
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 10; j++) {
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
                     firingGrid[i, j] = ' ';
                     homeGrid[i, j] = ' ';
                 }
             }
         }
 
-        public int FireShot(int column, int row) { // use this method when you are shooting at your opponent's ships
+        public int FireShot(int column, int row)
+        { // use this method when you are shooting at your opponent's ships
 
             // check if hit and store result
-            if (OpponentConnection.FireAtOpponent(column, row)) {
+            if (OpponentConnection.FireAtOpponent(column, row))
+            {
                 firingGrid[column, row] = 'X';
                 return 1;
-            } 
-            else {
+            }
+            else
+            {
                 firingGrid[column, row] = '~';
                 return -1;
             }
@@ -74,16 +85,19 @@ namespace Battleships {
             return ReceiveShot(coords[0], coords[1]);
         }
 
-        public bool ReceiveShot(int column, int row) { // use this method when your opponent is shooting at your ships
+        public bool ReceiveShot(int column, int row)
+        { // use this method when your opponent is shooting at your ships
 
             // assume valid square as program will validate before sending FIRE message
 
             // check if hit and store result
-            if (homeGrid[column, row] == ' ') {
+            if (homeGrid[column, row] == ' ')
+            {
                 homeGrid[column, row] = '~'; // mark as missed shot by opponent
                 return false;
-            } 
-            else {
+            }
+            else
+            {
                 homeGrid[column, row] = homeGrid[column, row].ToString().ToLower()[0];
                 return true;
             }
@@ -108,23 +122,27 @@ namespace Battleships {
             else return firingGrid[column, row];
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             StringBuilder sb = new StringBuilder();
             sb.Append("   ~~~ Y O U R    S H I P S ~~~            ~~~  OPPONENT'S SHIPS  ~~~\n");
             sb.Append("   A  B  C  D  E  F  G  H  I  J           A  B  C  D  E  F  G  H  I  J\n");
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 10; i++)
+            {
 
-                sb.Append((i+1) + " ");
+                sb.Append((i + 1) + " ");
                 if (i != 9) sb.Append(" ");
-                
-                for (int j = 0; j < 10; j++) {
+
+                for (int j = 0; j < 10; j++)
+                {
                     sb.Append(homeGrid[j, i] + "  ");
                 }
 
-                sb.Append("      " + (i+1) + " ");
+                sb.Append("      " + (i + 1) + " ");
                 if (i != 9) sb.Append(" ");
 
-                for (int j = 0; j < 10; j++) {
+                for (int j = 0; j < 10; j++)
+                {
                     sb.Append(firingGrid[j, i] + "  ");
                 }
 
