@@ -17,11 +17,22 @@ namespace Battleships
 
         public static string FireAtOpponent(int column, int row)
         {
-            Send($"FIRE:{CharTransform.ColumnChar(column)}{row + 1}");
-            string result = Receive();
+            string result = "";
+            try 
+            {
+                Send($"FIRE:{CharTransform.ColumnChar(column)}{row + 1}");
+                result = Receive();
 
-            if (result[0..4] == "MISS") UserInterface.gg.FireShot(column, row, false);
-            else UserInterface.gg.FireShot(column, row, true);
+                if (result[0..4] == "MISS") UserInterface.gg.FireShot(column, row, false);
+                else UserInterface.gg.FireShot(column, row, true);
+            }
+            catch (Exception e) 
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\nAn exception occurred while firing at opponent:\n{e}");
+                Console.ResetColor();
+                Battleships.Shutdown(); // if exceptions come back to here, the connection is proper dead
+            }
 
             return result;
         }
@@ -33,25 +44,39 @@ namespace Battleships
 
         public static string OpponentFiresAtUs()
         {
-            string receiveString = Receive();
-            // Console.WriteLine($"OpponentFiresAtUs(): {receiveString}");
-
-            int column = CharTransform.ColumnNo(receiveString[5]);
-            int row = int.Parse(receiveString[6..]) - 1;
-
-
             string result = "";
 
-            if (UserInterface.gg.ReceiveShot(column, row)) 
+            try 
             {
-                result = $"HIT:{receiveString[5..]}";
+                string receiveString = Receive();
+                // Console.WriteLine($"OpponentFiresAtUs(): {receiveString}");
+
+                int column = CharTransform.ColumnNo(receiveString[5]);
+                int row = int.Parse(receiveString[6..]) - 1;
+
+
+                result = "";
+
+                if (UserInterface.gg.ReceiveShot(column, row)) 
+                {
+                    result = $"HIT:{receiveString[5..]}";
+                }
+                else 
+                {
+                    result = $"MISS:{receiveString[5..]}";
+                }
+
+                Send(result);
             }
-            else 
+            catch (Exception e) 
             {
-                result = $"MISS:{receiveString[5..]}";
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\nAn exception occurred while being fired at by opponent:\n{e}");
+                Console.ResetColor();
+                Battleships.Shutdown(); // if exceptions come back to here, the connection is proper dead
             }
 
-            Send(result);
+
 
             return result;
         }
@@ -90,6 +115,11 @@ namespace Battleships
 
                     // TODO: actually check the logic that the game starts after this point?!?!
                 }
+                catch (Exception e) {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"\nAn exception occurred while receiving a TCP message from opponent:\n{e}");
+                    Console.ResetColor();
+                }
                 finally
                 {
                     listener.Stop();
@@ -109,14 +139,22 @@ namespace Battleships
             if (!ready) { // this will not be called until after TCP has begun to be established; wait should be short!
                 for (int i = 0; i <= 240; i++) {
                     if (ready) break;
-                    if (i%30 == 0) Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
-                    if (i == 240) Console.WriteLine("Message timeout! Critical connection error.");
+                    // if (i%30 == 0) Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
+                    if (i == 240) 
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\nMessage timeout! Critical connection error.");
+                        Console.ResetColor();
+                        Battleships.Shutdown();
+                    }
                     Thread.Sleep(1000);
                 }
             }
+            Console.ForegroundColor = ConsoleColor.Red;
             Debug.Assert(tcpClient is not null, "tcpClient has not initialised!");
             Debug.Assert(opponentEndpoint is not null, "opponentEndpoint has not initialised!");
             Debug.Assert(tcpStream is not null, "tcpStream has not initialised!");
+            Console.ResetColor();
 
             string message = "";
             TcpListener listener = new(opponentEndpoint);
@@ -129,6 +167,11 @@ namespace Battleships
 
                 message = Encoding.UTF8.GetString(buffer, 0, received);
                 // Console.WriteLine($"Message received: \"{message}\"");
+            }
+            catch (Exception e) {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\nAn exception occurred while receiving a TCP message from opponent:\n{e}");
+                Console.ResetColor();
             }
             finally
             {
@@ -147,9 +190,11 @@ namespace Battleships
                     Thread.Sleep(1000);
                 }
             }
+            Console.ForegroundColor = ConsoleColor.Red;
             Debug.Assert(tcpClient is not null, "tcpClient has not initialised!");
             Debug.Assert(opponentEndpoint is not null, "opponentEndpoint has not initialised!");
             Debug.Assert(tcpStream is not null, "tcpStream has not initialised!");
+            Console.ResetColor();
 
             try
             {
@@ -163,8 +208,10 @@ namespace Battleships
             }
             catch (Exception e)
             {
-                Console.WriteLine($"An error occurred while sending a message to Player 1: \n" + 
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\nAn error occurred while sending a message to Player 1: \n" + 
                     $"Message text: {msg}\n{e}");
+                Console.ResetColor();
                 Battleships.Shutdown();
             }
 
@@ -192,8 +239,10 @@ namespace Battleships
             }
             catch (Exception e)
             {
-                Console.WriteLine($"An error occurred while initiating connection to Player 1: {e}");
-                Console.WriteLine("\n!IMPORTANT! Restart this client to reattempt connection.");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\nAn error occurred while initiating connection to Player 1: {e}");
+                Console.ResetColor();
+                Battleships.Shutdown();
             }
         }
     }

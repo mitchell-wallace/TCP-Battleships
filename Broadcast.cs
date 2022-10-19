@@ -36,8 +36,10 @@ namespace Battleships
 
         private static void Listen() // we are trying to do BeginReceive and EndReceive here
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Debug.Assert(udpClient is not null, "udpClient has not initialised!");
             Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
+            Console.ResetColor();
 
             if (Battleships.PlayerNo != 0) return;
 
@@ -54,26 +56,30 @@ namespace Battleships
                     IPEndPoint? remoteEP = null;
                     byte[] receivedData = udpClient.EndReceive(asyncResult, ref remoteEP!);
                     // EndReceive worked and we received data and remote endpoint
-                    Console.WriteLine("AsyncResult completed successfully.");
+                    // Console.WriteLine("AsyncResult completed successfully.");
                 }
                 catch (Exception e)
                 {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"Error receiving message; broadcasting...\n{e}");
+                    Console.ResetColor();
                     Thread.Sleep(1000); // leaving this here just in case I get an exception loop again
                     // EndReceive failed
                 }
             }
             else
             {
-                Console.WriteLine("No message received; broadcasting...");
+                // Console.WriteLine("No message received; broadcasting...");
                 // timeout expired
             }
         }
 
         private static void Send()
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Debug.Assert(udpClient is not null, "udpClient has not initialised!");
             Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
+            Console.ResetColor();
             //udpClient.Client.Bind(udpEndPoint);
 
             try
@@ -83,7 +89,10 @@ namespace Battleships
             }
             catch (Exception e)
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"An exception occurred while attempting to broadcast a UDP packet;\n{e}");
+                Console.ResetColor();
+                Thread.Sleep(1000);
             }
 
             if (extraDebug)
@@ -98,11 +107,10 @@ namespace Battleships
 
         private static void ReceiveCallback(IAsyncResult ar)
         {
-            // UdpClient u = ((UdpState)(ar.AsyncState)).u;
-            // IPEndPoint e = ((UdpState)(ar.AsyncState)).e;
-
+            Console.ForegroundColor = ConsoleColor.Red;
             Debug.Assert(udpClient is not null, "udpClient has not initialised!");
             Debug.Assert(udpEndPoint is not null, "udpEndPoint has not initialised!");
+            Console.ResetColor();
 
             byte[] receiveBytes = udpClient.EndReceive(ar, ref udpEndPoint);
             string receiveString = Encoding.ASCII.GetString(receiveBytes);
@@ -110,7 +118,7 @@ namespace Battleships
             if (receiveString != $"NEW PLAYER:{Battleships.RandomTcpPort}"
                 && Battleships.PlayerNo == 0) // if player number already assigned, TCP connection already started
             {
-                Console.WriteLine($"Received: {receiveString}");
+                // Console.WriteLine($"Received: {receiveString}");
                 contacted = true;
                 Battleships.PlayerNo = 2;
                 Battleships.AgreedTcpPort = int.Parse(receiveString[11..]); // "NEW PLAYER:".Length = 11; we extract port only

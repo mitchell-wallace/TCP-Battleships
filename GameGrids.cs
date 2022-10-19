@@ -63,7 +63,6 @@ namespace Battleships
         {
             if (firingGrid[column, row] != ' ')
             {
-                Console.WriteLine("ERROR: Cell has already been tried!");
                 return false;
             }
             return true;
@@ -80,7 +79,8 @@ namespace Battleships
             }
             else
             {
-                homeGrid[column, row] = homeGrid[column, row].ToString().ToLower()[0];
+                // homeGrid[column, row] = homeGrid[column, row].ToString().ToLower()[0];
+                homeGrid[column, row] = 'X';
                 return true;
             }
         }

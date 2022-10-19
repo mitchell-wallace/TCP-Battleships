@@ -16,7 +16,9 @@ namespace Battleships
 
         public static void Play(bool isPlayer1)
         { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("You may send the message 'END' at any time to end the game.");
+            Console.ResetColor();
 
             // static variable re-initialisation
             StillPlaying = true;
@@ -36,14 +38,18 @@ namespace Battleships
                 // info display
                 string info1 = $"======= Turn number {turnNo} : {whoseTurn} =======";
                 string info2 = new string('=', info1.Length);
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
+                Console.ResetColor();
 
                 // call code for the turn
                 if (yourTurn) YourTurn();
                 else OpponentsTurn();
 
                 // end of turn process
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("\n" + gg.ToString());
+                Console.ResetColor();
                 turnNo++;
             }
             Console.WriteLine("Game has ended. Thanks for playing!");
@@ -81,8 +87,10 @@ namespace Battleships
                 // regex validation
                 if (!ShootingRegex.IsMatch(shot))
                 {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine("Invalid input! Enter a column [A-J] followed by a row [1-10] like this:");
                     Console.WriteLine("\t>A1");
+                    Console.ResetColor();
                     continue;
                 }
 
@@ -90,7 +98,12 @@ namespace Battleships
                 column = CharTransform.ColumnNo(shot[0]);
                 row = int.Parse(shot[1..].ToString()) - 1;
                 if (gg.IsValidTarget(column, row)) validInput = true;
-                else Console.WriteLine("You have already fired at this square! Try another target.");
+                else 
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("You have already fired at this square! Try another target.");
+                    Console.ResetColor();
+                } 
 
             }
 
@@ -126,7 +139,9 @@ namespace Battleships
             // Placing Submarine
             PlaceOneShipRandomly('S', rand);
 
+            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine(gg.ToString(true));
+            Console.ResetColor();
         }
 
         private static void PlaceOneShipRandomly(char type, Random rand)
@@ -173,35 +188,37 @@ namespace Battleships
             gg.PlaceShip(column, row, isHorizontal, type);
         }
 
-        public static void PlaceShipsManually(bool silent = false) // TODO: the spec requires random placement
+        public static void PlaceShipsManually() // TODO: the spec requires random placement
         {
             gg.Reset();
 
             // info display
             string info1 = $"======= Placing ships : {Battleships.PlayerName} =======";
             string info2 = new string('=', info1.Length);
-            if (!silent) Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
+            Console.ResetColor();
 
-            if (!silent) Console.WriteLine("First, you must place your ships on your grid.\n" +
+            Console.WriteLine("First, you must place your ships on your grid.\n" +
                 "Ships are placed by entering the cell in the top left of the desired" +
                 "position, and can be placed either horizontally (H) or vertically (V).\n" +
                 "An example input would be A1H, where the ship would be added horizontally, " +
                 "starting from cell A1 and going to the right.\n" +
                 "Ships cannot be placed on top of each other.\n");
 
-            if (!silent) Console.WriteLine("Placing first ship - Aircraft Carrier, 5 blocks long.");
+            Console.WriteLine("Placing first ship - Aircraft Carrier, 5 blocks long.");
             PlaceOneShip('A');
-            if (!silent) Console.WriteLine("Placing second ship - Battleship, 4 blocks long.");
+            Console.WriteLine("Placing second ship - Battleship, 4 blocks long.");
             PlaceOneShip('B');
-            if (!silent) Console.WriteLine("Placing third ship - Cruiser, 3 blocks long.");
+            Console.WriteLine("Placing third ship - Cruiser, 3 blocks long.");
             PlaceOneShip('C');
-            if (!silent) Console.WriteLine("Placing fourth ship - Patrol Boat, 2 blocks long.");
+            Console.WriteLine("Placing fourth ship - Patrol Boat, 2 blocks long.");
             PlaceOneShip('P');
-            if (!silent) Console.WriteLine("Placing fifth and final ship - Submarine, 3 blocks long.");
+            Console.WriteLine("Placing fifth and final ship - Submarine, 3 blocks long.");
             PlaceOneShip('S');
         }
 
-        public static void PlaceOneShip(char type, bool silent = false)
+        public static void PlaceOneShip(char type)
         {
             string pos = "";
             bool validInput = false;
@@ -214,7 +231,7 @@ namespace Battleships
             while (!validInput)
             {
                 // receive input
-                if (!silent) Console.Write("Enter the desired position:\n\t>");
+                Console.Write("Enter the desired position:\n\t>");
                 pos = Console.ReadLine()!;
 
                 // validate input
@@ -226,9 +243,9 @@ namespace Battleships
                 pos = pos.ToUpper().Replace(" ", "").Replace("\t", "");
                 if (!PlacementRegex.IsMatch(pos))
                 {
-                    if (!silent) Console.WriteLine("Invalid input! Enter a column [A-J] followed by a row [1-10]\n" +
+                    Console.WriteLine("Invalid input! Enter a column [A-J] followed by a row [1-10]\n" +
                         "and either a H or V like this::");
-                    if (!silent) Console.WriteLine("\t>A1H");
+                    Console.WriteLine("\t>A1H");
                     continue;
                 }
 
@@ -244,7 +261,7 @@ namespace Battleships
                     {
                         if (gg.GetCell(column + i, row, true) != ' ')
                         {
-                            if (!silent) Console.WriteLine($"Invalid input! This placement clashes with your " +
+                            Console.WriteLine($"Invalid input! This placement clashes with your " +
                                 $"{CharTransform.ShipType(gg.GetCell(column + i, row, true))}");
                             positionError = true;
                             break;
@@ -254,7 +271,7 @@ namespace Battleships
                     {
                         if (gg.GetCell(column, row + i, true) != ' ')
                         {
-                            if (!silent) Console.WriteLine($"Invalid input! This placement clashes with your " +
+                            Console.WriteLine($"Invalid input! This placement clashes with your " +
                                 $"{CharTransform.ShipType(gg.GetCell(column, row + i, true))}");
                             positionError = true;
                             break;
@@ -266,7 +283,7 @@ namespace Battleships
             }
 
             gg.PlaceShip(column, row, isHorizontal, type);
-            if (!silent) Console.WriteLine($"{CharTransform.ShipType(type)} placed successfully!\n\n" +
+            Console.WriteLine($"{CharTransform.ShipType(type)} placed successfully!\n\n" +
                 $"{gg.ToString(true)}");
         }
     }

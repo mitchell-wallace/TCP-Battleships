@@ -6,7 +6,7 @@
 ✔ how do we not dispose tcpStream?? @done(22-10-19 12:55)
 ✔ Implement fire, hit messages @done(22-10-19 14:38)
 ☐ Implement SUNK function
-☐ Fix shot mapping on opponent grid
+✔ Fix shot mapping on opponent grid @done(22-10-19 14:48)
 ✔ Have players actually fire at each other @done(22-10-19 14:38)
 ✔ Improve random placement @done(22-10-19 12:04)
 ☐ Verify / fix separation of concerns
@@ -15,10 +15,11 @@
 ☐ Fix delays with startup -- primarily, host being slow to break the loop
     ☐ THEN change the wait timer to 30 seconds as required by assignment spec
 ☐ Why can't the WSL version ever be player 2??
-☐ Change ship hits to X's -- lowercase just isn't all that noticeable
+✔ Change ship hits to X's -- lowercase just isn't all that noticeable @done(22-10-19 14:55)
     >> ACTUALLY let's do this with colours!!!:
-    You can set Console.BackgroundColor. Possible colours:
+    You can set Console.BackgroundColor = ConsoleColor (an Enum). Possible colours:
         Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White
+    That's actually really tedious to try and do on a per-character basis unfortunately
 
 
 --- ok so the stuff below this line is basically wrong ---

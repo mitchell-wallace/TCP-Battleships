@@ -20,7 +20,9 @@ namespace Battleships
 
         public static void Main(string[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("\n> > > >   B a t t l e s h i p s ! !   < < < <\n\n");
+            Console.ResetColor();
 
             // Set random TCP port
             RandomTcpPort = new Random().Next(1024, 65000); // retain this even after setting agreed port,
@@ -48,8 +50,10 @@ namespace Battleships
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("No command line arguments received; please specify broadcast address and port." +
                 "\nAttempting to play using default settings; press CTRL+C to cancel.");
+                Console.ResetColor();
                 RandomisePlayerName();
             }
             Console.WriteLine($"Broadcast address: {BcAddress} | Broadcast port: {BcPort} | " +
@@ -99,6 +103,9 @@ namespace Battleships
 
         public static void Shutdown() 
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("\nAttempting to shut down gracefully...");
+            Console.ResetColor();
             OpponentConnection.Close();
             Environment.Exit(0);
         }
