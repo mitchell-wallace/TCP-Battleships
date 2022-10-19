@@ -17,6 +17,7 @@ namespace Battleships
         public static int AgreedTcpPort = 9001; // Agreed-upon TCP port by both instances
         public static int PlayerNo = 0; // 0 = unassigned; 1 = host; 2 = client
         public static string PlayerName = "Battleships Player";
+        public static bool GameOver = false; // when set to true, the game will close down
 
         public static void Main(string[] args)
         {
@@ -104,7 +105,7 @@ namespace Battleships
         public static void Shutdown() 
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("\nAttempting to shut down gracefully...");
+            Console.WriteLine("\nShutting down game...");
             Console.ResetColor();
             OpponentConnection.Close();
             Environment.Exit(0);

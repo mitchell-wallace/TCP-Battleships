@@ -23,7 +23,12 @@ namespace Battleships
                 Send($"FIRE:{CharTransform.ColumnChar(column)}{row + 1}");
                 result = Receive();
 
-                if (result[0..4] == "MISS") UserInterface.gg.FireShot(column, row, false);
+                if (result.Length > 9 && result[0..9] == "GAME OVER") 
+                {
+                    Battleships.GameOver = true;
+                    UserInterface.gg.FireShot(column, row, true);
+                }
+                else if (result[0..4] == "MISS") UserInterface.gg.FireShot(column, row, false);
                 else UserInterface.gg.FireShot(column, row, true);
             }
             catch (Exception e) 
@@ -51,19 +56,35 @@ namespace Battleships
                 string receiveString = Receive();
                 // Console.WriteLine($"OpponentFiresAtUs(): {receiveString}");
 
+                if (receiveString == "END") 
+                {
+                    Console.WriteLine("Opponent has left the game. Thanks for playing!");
+                    Battleships.Shutdown();
+                }
+
                 int column = CharTransform.ColumnNo(receiveString[5]);
                 int row = int.Parse(receiveString[6..]) - 1;
 
+                char resultChar = UserInterface.gg.ReceiveShot(column, row);
 
-                result = "";
-
-                if (UserInterface.gg.ReceiveShot(column, row)) 
+                if (resultChar == 'X')
                 {
                     result = $"HIT:{receiveString[5..]}";
                 }
-                else 
+                else if (resultChar == '~')
                 {
                     result = $"MISS:{receiveString[5..]}";
+                }
+                else 
+                {
+                    if (resultChar == resultChar.ToString().ToLower()[0]) // lowercase indicates game over
+                    {
+                        result = $"GAME OVER:{receiveString[5..]}:" + 
+                            $"{CharTransform.ShipType(resultChar.ToString().ToUpper()[0])}";
+                        Battleships.GameOver = true;
+                    }
+                    else
+                        result = $"SUNK:{receiveString[5..]}:{CharTransform.ShipType(resultChar)}";
                 }
 
                 Send(result);

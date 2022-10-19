@@ -5,7 +5,21 @@
 ✔ Actually start game for both players @done(22-10-18 21:01)
 ✔ how do we not dispose tcpStream?? @done(22-10-19 12:55)
 ✔ Implement fire, hit messages @done(22-10-19 14:38)
-☐ Implement SUNK function
+✔ Implement SUNK function @done(22-10-19 21:17)
+✔ Implement GAME OVER message @done(22-10-19 21:39)
+☐ Send player names
+☐ Limit buffer size (and therefore playername size)
+    the longest control message needed is 29 bytes - GAME OVER:A3:Aircraft Carrier (29 chars)
+    allowing 128 is still plenty of headroom
+    GAME START:Battleships_Player566_YeahCoolNameDude (49 chars)
+    yeah 128 is plenty. If playername is over 128 - 11 = 117 chars long, just chop off the end
+    if it contains non-ASCII characters, well, we'll see what happens
+    ✔ Test GAME OVER message @done(22-10-19 21:39)
+    ☐ Test sending player names with ASCII only
+    ☐ Test sending player names with non-ASCII
+    ☐ Test capping player names without breaking length
+    ☐ Test capping player names with ASCII > 117 long
+    ☐ Test capping player names with non-ASCII > 117 long
 ✔ Fix shot mapping on opponent grid @done(22-10-19 14:48)
 ✔ Have players actually fire at each other @done(22-10-19 14:38)
 ✔ Improve random placement @done(22-10-19 12:04)

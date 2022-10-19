@@ -26,6 +26,7 @@ namespace Battleships
 
         private char[,] firingGrid = new char[10, 10]; // grid marking your history of firing at the opponent's ships
         private char[,] homeGrid = new char[10, 10]; // grid marking the position of your own ships
+        private int aircraftCarrierCells = 5, battleshipCells = 4, cruiserCells = 3, patrolBoatCells = 2, submarineCells = 3;
 
         public GameGrids()
         {
@@ -68,21 +69,74 @@ namespace Battleships
             return true;
         }
 
-        public bool ReceiveShot(int column, int row) // return: true is HIT, false is MISS
+        public char ReceiveShot(int column, int row) // return: true is HIT, false is MISS
         { // use this method when your opponent is shooting at your ships
 
+            char result = ' ';
             // check if hit and store result
             if (homeGrid[column, row] == ' ')
             {
                 homeGrid[column, row] = '~'; // mark as missed shot by opponent
-                return false;
+                result = '~';
             }
             else
             {
-                // homeGrid[column, row] = homeGrid[column, row].ToString().ToLower()[0];
+                result = 'X'; // ovverridden if sunk
+                char k = homeGrid[column, row];
+                switch (k)
+                {
+                    case 'A':
+                        aircraftCarrierCells--; // decrement the number of cells remaining for this ship
+                        if (aircraftCarrierCells == 0)
+                        { // 0 indicates sunk
+                            result = k;
+                            aircraftCarrierCells--; // decrement to -1 to indicate sunk logic has been processed
+                        }
+                        break;
+                    case 'B':
+                        battleshipCells--;
+                        if (battleshipCells == 0)
+                        {
+                            result = k;
+                            battleshipCells--;
+                        }
+                        break;
+                    case 'C':
+                        cruiserCells--;
+                        if (cruiserCells == 0)
+                        {
+                            result = k;
+                            cruiserCells--;
+                        }
+                        break;
+                    case 'P':
+                        patrolBoatCells--;
+                        if (patrolBoatCells == 0)
+                        {
+                            result = k;
+                            patrolBoatCells--;
+                        }
+                        break;
+                    case 'S':
+                        submarineCells--;
+                        if (submarineCells == 0)
+                        {
+                            result = k;
+                            submarineCells--;
+                        }
+                        break;
+                    default: break;
+                }
                 homeGrid[column, row] = 'X';
-                return true;
             }
+
+            if (aircraftCarrierCells + battleshipCells + cruiserCells + patrolBoatCells + submarineCells == -5) 
+            { // if all five indicate -5, then all 5 have been sunk, and we send "GAME OVER"
+              // we also need to indicate which ship was sunk, so we do this with lowercase to keep to a single character
+                result = result.ToString().ToLower()[0];
+            }
+
+            return result;
         }
 
         public void PlaceShip(int column, int row, bool isHorizontal, char type)

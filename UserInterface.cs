@@ -38,7 +38,7 @@ namespace Battleships
                 // info display
                 string info1 = $"======= Turn number {turnNo} : {whoseTurn} =======";
                 string info2 = new string('=', info1.Length);
-                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
                 Console.ResetColor();
 
@@ -47,14 +47,31 @@ namespace Battleships
                 else OpponentsTurn();
 
                 // end of turn process
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("\n" + gg.ToString());
                 Console.ResetColor();
+                if (Battleships.GameOver) GameOver(yourTurn); // check for game over
                 turnNo++;
             }
             Console.WriteLine("Game has ended. Thanks for playing!");
         }
 
+        public static void GameOver(bool yourTurn) 
+        {
+            if (yourTurn) 
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Game over, you win! Thanks for playing.");
+                Console.ResetColor();
+            } 
+            else 
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("Game over, you lose! Thanks for playing.");
+                Console.ResetColor();
+            }
+            Battleships.Shutdown();
+        }
 
 
         public static void YourTurn()
@@ -139,7 +156,7 @@ namespace Battleships
             // Placing Submarine
             PlaceOneShipRandomly('S', rand);
 
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(gg.ToString(true));
             Console.ResetColor();
         }
@@ -195,7 +212,7 @@ namespace Battleships
             // info display
             string info1 = $"======= Placing ships : {Battleships.PlayerName} =======";
             string info2 = new string('=', info1.Length);
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
             Console.ResetColor();
 
