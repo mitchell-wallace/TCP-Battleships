@@ -34,10 +34,18 @@ namespace Battleships {
             }
         }
 
+        public void Reset() {
+            firingGrid = new char[10, 10];
+            homeGrid = new char[10, 10];
+            for (int i = 0; i < 10; i++) {
+                for (int j = 0; j < 10; j++) {
+                    firingGrid[i, j] = ' ';
+                    homeGrid[i, j] = ' ';
+                }
+            }
+        }
 
         public int FireShot(int column, int row) { // use this method when you are shooting at your opponent's ships
-
-            
 
             // check if hit and store result
             if (OpponentConnection.FireAtOpponent(column, row)) {

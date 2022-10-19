@@ -5,7 +5,7 @@
 ✔ Actually start game for both players @done(22-10-18 21:01)
 ☐ Implement fire, hit, sunk messages
 ☐ Have players actually fire at each other
-☐ Improve random placement
+✔ Improve random placement @done(22-10-19 12:04)
 
 
 --- ok so the stuff below this line is basically wrong ---

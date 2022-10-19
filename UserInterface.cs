@@ -8,7 +8,7 @@ namespace Battleships {
         static bool StillPlaying = true; // loop break variable
         static string whoseTurn = ""; // solely for display
         static int turnNo = 1; // primarily for display; simpler to start from 1
-        static GameGrids gg = new GameGrids(); // data structure for game data
+        public static GameGrids gg = new GameGrids(); // data structure for game data
         static Regex ShootingRegex = new Regex(@"^[A-J][1-9]0?$"); // regex pattern for validating shooting input
         static Regex PlacementRegex = new Regex(@"^[A-J](10|[1-9])$"); // regex pattern for validating ship placement input
 
@@ -117,77 +117,68 @@ namespace Battleships {
             Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0]+1)}{shot[1]+1} and {result}!");
         }
 
-        public static void PlaceShipsRandomly() {
-            // TODO: improve this. It's pretty low-IQ currently.
-            // we randomly choose horizontal or vertical, and all ships will face that direction
-            // we pick random rows or columns respectively, where all 10 are available,
-            // then set a random offset for the long side of the ship
-            // this is a pretty bad explanation but I can't call them rows or columns when that part is randomised...
-
+        public static void PlaceShipsRandomly() 
+        {
+            gg.Reset();
             Random rand = new();
-            int mainCoord = -1;
-            int offset = -1;
 
-            // for (int i = 0; i < 20; i++)
-            // {
-            //     bool b = (rand.Next(2) == 1);
-            //     Console.WriteLine($"{i}: {b}");
-            // }
-            bool isHorizontal = (rand.Next(2) == 1);
-            
-            List<int> placesUsed = new();
-
-            // place aircraft carrier
-            do {
-                mainCoord = rand.Next(10);
-            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
-            placesUsed.Add(mainCoord);
-            offset = rand.Next(5);
-            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'A');
-            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'A');
-
-            // place battleship
-            do {
-                mainCoord = rand.Next(10);
-            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
-            placesUsed.Add(mainCoord);
-            offset = rand.Next(6);
-            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'B');
-            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'B');
-
-            // place cruiser
-            do {
-                mainCoord = rand.Next(10);
-            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
-            placesUsed.Add(mainCoord);
-            offset = rand.Next(7);
-            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'C');
-            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'C');
-
-            // place patrol boat
-            do {
-                mainCoord = rand.Next(10);
-            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
-            placesUsed.Add(mainCoord);
-            offset = rand.Next(8);
-            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'P');
-            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'P');
-
-            // place submarine
-            do {
-                mainCoord = rand.Next(10);
-            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
-            placesUsed.Add(mainCoord);
-            offset = rand.Next(7);
-            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'S');
-            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'S');
+            // Placing Aircraft Carrier
+            PlaceOneShipRandomly('A', rand);
+            // Placing Battleship
+            PlaceOneShipRandomly('B', rand);
+            // Placing Cruiser
+            PlaceOneShipRandomly('C', rand);
+            // Placing Patrol Boat
+            PlaceOneShipRandomly('P', rand);
+            // Placing Submarine
+            PlaceOneShipRandomly('S', rand);
             
             Console.WriteLine(gg.ToString(true));
         }
 
+        private static void PlaceOneShipRandomly(char type, Random rand) 
+        { // reusing rand for efficiency
+            bool isHorizontal, positionFound;
+            int row, column, size;
+
+            do {
+                isHorizontal = (rand.Next(2) == 1);
+                size = CharTransform.ShipSize(type);
+                positionFound = true; // easier to default to true and change if not
+
+                if (isHorizontal) {
+                    row = rand.Next(10);
+                    column = rand.Next(10 - size);
+                } else {
+                    column = rand.Next(10);
+                    row = rand.Next(10 - size);
+                }
+
+                for (int i = 0; i < size; i++)
+                {
+                    if (isHorizontal) // we need to split horiz/vert because they iterate cells differently
+                    {
+                        if (gg.GetCell(column + i, row, true) != ' ')
+                        {
+                            positionFound = false;
+                        }
+                    }
+                    else // if placing vertically
+                    {
+                        if (gg.GetCell(column, row + i, true) != ' ')
+                        {
+                            positionFound = false;
+                        }
+                    }
+                }
+            } while (!positionFound);
+
+            gg.PlaceShip(column, row, isHorizontal, type);
+        }
+
         public static void PlaceShipsManually(bool silent = false) // TODO: the spec requires random placement
         {
-            //Console.WriteLine("You cannot yet manually place ships!");
+            gg.Reset();
 
             // info display
             string info1 = $"======= Placing ships : {Battleships.PlayerName} =======";
