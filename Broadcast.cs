@@ -15,8 +15,8 @@ namespace Battleships
         private static IPEndPoint? udpEndPoint;
         private static UdpState? udpState;
         private static bool messageReceived = false;
-        private static bool contacted = false; // indicates whether a broadcast message has been received
-        private static bool firstTry = true; // print extra debug info until first execution of Send()
+        public static bool contacted = false; // indicates whether a broadcast or TCP message has been received
+        private static bool extraDebug = false; // optionally print extra debug info until first execution of Send()
         private static TimeSpan ttw = TimeSpan.FromSeconds(6);
         static byte[] bytes = new byte[2048]; // for listen2 and receive2
         public static void Connect()
@@ -25,15 +25,7 @@ namespace Battleships
             udpEndPoint = new IPEndPoint(Battleships.BcAddress, Battleships.BcPort);
             udpState = new UdpState(udpClient, udpEndPoint);
 
-            // manually set some properties because we want to be sure they're set correctly
-            // actually I think this breaks stuff.........
-            // udpClient = new UdpClient();
-            // udpClient.EnableBroadcast = true;
-            // udpClient.Ttl = 96;
-            // udpClient.ExclusiveAddressUse = false;
-            // udpClient.Client.Bind(udpEndPoint);
-            
-            Thread tcpListen = new Thread(new ThreadStart(OpponentConnection.ListenAsHost));
+            Thread tcpListen = new Thread(new ThreadStart(OpponentConnection.HostListen));
             tcpListen.Start();
 
             while (!contacted)
@@ -41,8 +33,6 @@ namespace Battleships
                 Listen();
                 if (!contacted) Send();
             }
-            // we then have to send a TCP message
-            // this means we also have to already be listening for a TCP message??
         }
 
         private static void Listen() // we are trying to do BeginReceive and EndReceive here
@@ -52,7 +42,7 @@ namespace Battleships
 
             if (Battleships.PlayerNo != 0) return;
 
-            if (firstTry) Console.WriteLine("Looking for existing game host...");
+            if (extraDebug) Console.WriteLine("Looking for existing game host...");
             var asyncResult = udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), udpState);
 
             Console.WriteLine("\nListening.....");
@@ -95,12 +85,12 @@ namespace Battleships
                 Console.WriteLine($"An exception occurred while attempting to broadcast a UDP packet;\n{e}");
             }
 
-            if (firstTry) {
+            if (extraDebug) {
                 var msg = $"NEW PLAYER:{Battleships.RandomTcpPort}";
                 Console.WriteLine($"Broadcasting message: {msg};");
                 Console.WriteLine($"ttl: {udpClient.Ttl}; exclusive address use: {udpClient.ExclusiveAddressUse}; " +
                     $"enable broadcast: {udpClient.EnableBroadcast}; available: {udpClient.Available}");
-                firstTry = false;
+                extraDebug = false;
             }
         }
 

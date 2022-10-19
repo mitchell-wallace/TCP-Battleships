@@ -1,8 +1,19 @@
-P1:
-    ☐ Run OpponentConnection.ListenAsHost() as a loop!
+✔ Set player numbers correctly @done(22-10-18 20:22)
+    If contacted is set true in Broadcast, playernumber is set to 2
+    If set to true in OpponentConnection, playernumber is set to 1
+✔ Place ships randomly @done(22-10-18 20:48)
+✔ Actually start game for both players @done(22-10-18 21:01)
+☐ Implement fire, hit, sunk messages
+☐ Have players actually fire at each other
+☐ Improve random placement
 
-☐ impelement TCP
-    ☐ obtain IP address from received UDP packet, without breaking stuff
+
+--- ok so the stuff below this line is basically wrong ---
+
+Run OpponentConnection.ListenAsHost() as a loop!
+
+impelement TCP
+    obtain IP address from received UDP packet, without breaking stuff
         > make sure we are connecting to the right IP address
         > this /shouldn't/ be breaking this locally though...
         > mm, I think networking might be a bit weird with WSL? I can't seem to get it to receive a message
@@ -21,5 +32,5 @@ P1:
         > Then we need to get them to actually respond!
         > I reckon that once this initial connection is working, all the other stuff will come a lot easier
 
-☐ manually set TTL to 128, Exclusive Address Use to false
+manually set TTL to 128, Exclusive Address Use to false
     > I tried, but it broke *shrug*

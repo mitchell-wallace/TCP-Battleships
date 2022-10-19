@@ -20,7 +20,8 @@ namespace Battleships {
             turnNo = 1;
 
             // setup ship placement
-            PlaceShips();
+            // PlaceShipsManually();
+            PlaceShipsRandomly();
 
             while (StillPlaying) {
                 // logic for alternating turns
@@ -116,35 +117,103 @@ namespace Battleships {
             Console.WriteLine($"Opponent fired at {CharTransform.ColumnChar(shot[0]+1)}{shot[1]+1} and {result}!");
         }
 
-        public static void PlaceShips()
+        public static void PlaceShipsRandomly() {
+            // TODO: improve this. It's pretty low-IQ currently.
+            // we randomly choose horizontal or vertical, and all ships will face that direction
+            // we pick random rows or columns respectively, where all 10 are available,
+            // then set a random offset for the long side of the ship
+            // this is a pretty bad explanation but I can't call them rows or columns when that part is randomised...
+
+            Random rand = new();
+            int mainCoord = -1;
+            int offset = -1;
+
+            // for (int i = 0; i < 20; i++)
+            // {
+            //     bool b = (rand.Next(2) == 1);
+            //     Console.WriteLine($"{i}: {b}");
+            // }
+            bool isHorizontal = (rand.Next(2) == 1);
+            
+            List<int> placesUsed = new();
+
+            // place aircraft carrier
+            do {
+                mainCoord = rand.Next(10);
+            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
+            placesUsed.Add(mainCoord);
+            offset = rand.Next(5);
+            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'A');
+            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'A');
+
+            // place battleship
+            do {
+                mainCoord = rand.Next(10);
+            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
+            placesUsed.Add(mainCoord);
+            offset = rand.Next(6);
+            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'B');
+            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'B');
+
+            // place cruiser
+            do {
+                mainCoord = rand.Next(10);
+            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
+            placesUsed.Add(mainCoord);
+            offset = rand.Next(7);
+            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'C');
+            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'C');
+
+            // place patrol boat
+            do {
+                mainCoord = rand.Next(10);
+            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
+            placesUsed.Add(mainCoord);
+            offset = rand.Next(8);
+            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'P');
+            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'P');
+
+            // place submarine
+            do {
+                mainCoord = rand.Next(10);
+            } while (placesUsed.Contains(mainCoord)); // if main coord already used, roll again
+            placesUsed.Add(mainCoord);
+            offset = rand.Next(7);
+            if (isHorizontal) gg.PlaceShip(offset, mainCoord, isHorizontal, 'S');
+            else gg.PlaceShip(mainCoord, offset, isHorizontal, 'S');
+            
+            Console.WriteLine(gg.ToString(true));
+        }
+
+        public static void PlaceShipsManually(bool silent = false) // TODO: the spec requires random placement
         {
             //Console.WriteLine("You cannot yet manually place ships!");
 
             // info display
             string info1 = $"======= Placing ships : {Battleships.PlayerName} =======";
             string info2 = new string('=', info1.Length);
-            Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
+            if (!silent) Console.WriteLine($"\n\n{info2}\n{info1}\n{info2}\n");
 
-            Console.WriteLine("First, you must place your ships on your grid.\n" +
+            if (!silent) Console.WriteLine("First, you must place your ships on your grid.\n" +
                 "Ships are placed by entering the cell in the top left of the desired" +
                 "position, and can be placed either horizontally (H) or vertically (V).\n" +
                 "An example input would be A1H, where the ship would be added horizontally, " +
                 "starting from cell A1 and going to the right.\n" +
                 "Ships cannot be placed on top of each other.\n");
 
-            Console.WriteLine("Placing first ship - Aircraft Carrier, 5 blocks long.");
+            if (!silent) Console.WriteLine("Placing first ship - Aircraft Carrier, 5 blocks long.");
             PlaceOneShip('A');
-            Console.WriteLine("Placing second ship - Battleship, 4 blocks long.");
+            if (!silent) Console.WriteLine("Placing second ship - Battleship, 4 blocks long.");
             PlaceOneShip('B');
-            Console.WriteLine("Placing third ship - Cruiser, 3 blocks long.");
+            if (!silent) Console.WriteLine("Placing third ship - Cruiser, 3 blocks long.");
             PlaceOneShip('C');
-            Console.WriteLine("Placing fourth ship - Patrol Boat, 2 blocks long.");
+            if (!silent) Console.WriteLine("Placing fourth ship - Patrol Boat, 2 blocks long.");
             PlaceOneShip('P');
-            Console.WriteLine("Placing fifth and final ship - Submarine, 3 blocks long.");
+            if (!silent) Console.WriteLine("Placing fifth and final ship - Submarine, 3 blocks long.");
             PlaceOneShip('S');
         }
 
-        public static void PlaceOneShip(char type)
+        public static void PlaceOneShip(char type, bool silent = false)
         {
             string pos = "";
             bool validInput = false;
@@ -157,7 +226,7 @@ namespace Battleships {
             while (!validInput)
             {
                 // receive input
-                Console.Write("Enter the desired position:\n\t>");
+                if (!silent) Console.Write("Enter the desired position:\n\t>");
                 pos = Console.ReadLine()!;
 
                 // validate input
@@ -169,9 +238,9 @@ namespace Battleships {
                 pos = pos.ToUpper().Replace(" ", "").Replace("\t", "");
                 if (!PlacementRegex.IsMatch(pos))
                 {
-                    Console.WriteLine("Invalid input! Enter a column [A-J] followed by a row [1-10]\n" +
+                    if (!silent) Console.WriteLine("Invalid input! Enter a column [A-J] followed by a row [1-10]\n" +
                         "and either a H or V like this::");
-                    Console.WriteLine("\t>A1H");
+                    if (!silent) Console.WriteLine("\t>A1H");
                     continue;
                 }
 
@@ -187,7 +256,7 @@ namespace Battleships {
                     {
                         if (gg.GetCell(column + i, row, true) != ' ')
                         {
-                            Console.WriteLine($"Invalid input! This placement clashes with your " +
+                            if (!silent) Console.WriteLine($"Invalid input! This placement clashes with your " +
                                 $"{CharTransform.ShipType(gg.GetCell(column + i, row, true))}");
                             positionError = true;
                             break;
@@ -197,7 +266,7 @@ namespace Battleships {
                     {
                         if (gg.GetCell(column, row + i, true) != ' ')
                         {
-                            Console.WriteLine($"Invalid input! This placement clashes with your " +
+                            if (!silent) Console.WriteLine($"Invalid input! This placement clashes with your " +
                                 $"{CharTransform.ShipType(gg.GetCell(column, row + i, true))}");
                             positionError = true;
                             break;
@@ -209,7 +278,7 @@ namespace Battleships {
             }
 
             gg.PlaceShip(column, row, isHorizontal, type);
-            Console.WriteLine($"{CharTransform.ShipType(type)} placed successfully!\n\n" +
+            if (!silent) Console.WriteLine($"{CharTransform.ShipType(type)} placed successfully!\n\n" +
                 $"{gg.ToString(true)}");
         }
     }
