@@ -17,7 +17,7 @@ namespace Battleships
         public static void Play(bool isPlayer1)
         { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("You may send the message 'END' at any time to end the game.");
+            Console.WriteLine("You may send the message 'END' at any time to end the game.\n");
             Console.ResetColor();
 
             // setup ship placement
