@@ -17,6 +17,9 @@ namespace Battleships
 
         public static bool FireAtOpponent(int column, int row)
         {
+            Send($"FIRE:{CharTransform.ColumnChar(column+1)}{row+1}");
+            string response = Receive();
+
             if (column == 2) return true;
             return false;
         }
@@ -26,23 +29,28 @@ namespace Battleships
             if (tcpClient is not null) tcpClient.Close();
         }
 
-        public static async void HostListen()
+        public static int[] OpponentFiresAtUs()
         {
-            var receiveString = await TcpInitialListenThread();
-            if (receiveString == "GAME START")
-            {
-                Console.WriteLine("====> HostListen complete <====");
-                Battleships.PlayerNo = 1;
-                Broadcast.contacted = true; // this will break the UDP listen-send loop
-            }
+            string response = Receive();
+            Console.WriteLine($"OpponentFiresAtUs(): {response}");
+            Send("HIT:A1");
+            int[] result = { counter % 10, counter / 10 };
+            counter++;
+            return result;
         }
 
-        public static async Task<string> TcpInitialListenThread()
+        public static void ResponseToOpponentShot(string response)
+        {
+            // TODO: respond to opponent with MISS, HIT, SUNK messages
+        }
+
+        public static async void InitialListen() // run as thread
         {
             string message = "";
+
             await Task.Run(async () =>
             {
-                Console.WriteLine("====> Executing OpponentConnection.ListenAsHost() <====");
+                Console.WriteLine("====> Executing OpponentConnection.InitialListen() <====");
                 opponentEndpoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
                 TcpListener listener = new(opponentEndpoint);
 
@@ -70,10 +78,50 @@ namespace Battleships
                     listener.Stop();
                 }
             });
+
+            if (message == "GAME START")
+            {
+                Console.WriteLine("====> HostListen complete <====");
+                Battleships.PlayerNo = 1;
+                Broadcast.contacted = true; // this will break the UDP listen-send loop
+            }
+        }
+ 
+        public static string Receive()
+        {
+            if (!ready) { // this will not be called until after TCP has begun to be established; wait should be short!
+                for (int i = 0; i <= 240; i++) {
+                    if (ready) break;
+                    if (i%30 == 0) Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
+                    if (i == 240) Console.WriteLine("Message timeout! Critical connection error.");
+                    Thread.Sleep(1000);
+                }
+            }
+            Debug.Assert(tcpClient is not null, "tcpClient has not initialised!");
+            Debug.Assert(opponentEndpoint is not null, "opponentEndpoint has not initialised!");
+            Debug.Assert(tcpStream is not null, "tcpStream has not initialised!");
+
+            string message = "";
+            TcpListener listener = new(opponentEndpoint);
+
+            try
+            {
+                // *~*~* RECEIVING MESSAGE *~*~*
+                var buffer = new byte[1_024];
+                int received = tcpStream.Read(buffer);
+
+                message = Encoding.UTF8.GetString(buffer, 0, received);
+                Console.WriteLine($"Message received: \"{message}\"");
+            }
+            finally
+            {
+                listener.Stop();
+            }
+
             return message;
         }
 
-        public static async void SendTcpMsg(string msg) {
+        public static async void Send(string msg) {
             if (!ready) { // this will not be called until after TCP has begun to be established; wait should be short!
                 for (int i = 0; i <= 240; i++) {
                     if (ready) break;
@@ -100,7 +148,6 @@ namespace Battleships
             {
                 Console.WriteLine($"An error occurred while sending a message to Player 1: \n" + 
                     $"Message text: {msg}\n{e}");
-                Console.WriteLine("\n!IMPORTANT! Restart this client to reattempt connection.");
                 Battleships.Shutdown();
             }
 
@@ -132,18 +179,5 @@ namespace Battleships
                 Console.WriteLine("\n!IMPORTANT! Restart this client to reattempt connection.");
             }
         }
-
-        public static int[] OpponentFiresAtUs()
-        {
-            int[] result = { counter % 10, counter / 10 };
-            counter++;
-            return result;
-        }
-
-        public static void ResponseToOpponentShot(string response)
-        {
-            // TODO: respond to opponent with MISS, HIT, SUNK messages
-        }
-
     }
 }

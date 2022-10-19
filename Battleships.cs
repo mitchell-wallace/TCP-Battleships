@@ -68,9 +68,6 @@ namespace Battleships
             // Console.WriteLine("Waiting for opponent to join... <NOT IMPLEMENTED>");
             Console.WriteLine($"\nNow playing as player #{PlayerNo}");
 
-            OpponentConnection.SendTcpMsg("FIRE:NewGuy123");
-            OpponentConnection.HostListen();
-
             UserInterface.Play(PlayerNo == 1);
             Shutdown();
         }

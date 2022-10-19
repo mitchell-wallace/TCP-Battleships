@@ -24,7 +24,7 @@ namespace Battleships
             udpEndPoint = new IPEndPoint(Battleships.BcAddress, Battleships.BcPort);
             udpState = new UdpState(udpClient, udpEndPoint);
 
-            Thread tcpListen = new Thread(new ThreadStart(OpponentConnection.HostListen));
+            Thread tcpListen = new Thread(new ThreadStart(OpponentConnection.InitialListen));
             tcpListen.Start();
 
             while (!contacted)
