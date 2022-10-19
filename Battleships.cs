@@ -6,19 +6,17 @@ using System.Text;
 
 namespace Battleships
 {
-
     public class Battleships
     {
-
         public static IPAddress BcAddress = IPAddress.Parse("127.0.0.1"); // UDP Broadcast Address; overwritten by arguments
         public static IPAddress OpponentAddress = IPAddress.Parse("127.0.0.1"); // TCP opponent address
         public static int BcPort = 9000; // UDP Broadcast Port
         public static int RandomTcpPort = 9001; // Randomised TCP port decided by this instance
         public static int AgreedTcpPort = 9001; // Agreed-upon TCP port by both instances
         public static int PlayerNo = 0; // 0 = unassigned; 1 = host; 2 = client
-        public static string PlayerName = "Battleships Player";
+        public static string PlayerName = "Battleships Player"; // initialise to a placeholder because it feels safer this way
+        public static string OpponentName = "Battleships Player"; // initialise to a placeholder because it feels safer this way
         public static bool GameOver = false; // when set to true, the game will close down
-
         public static void Main(string[] args)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -38,7 +36,9 @@ namespace Battleships
                 BcPort = int.Parse(args[1]);
                 if (args.Length > 2)
                 {
+                    if (args[2].Length > 0)
                     PlayerName = args[2];
+                    if (PlayerName.Length > 64) PlayerName = PlayerName.Replace(" ", "")[0..64]; // trim playernames
                     Console.WriteLine($"Welcome, {PlayerName}!");
                 }
                 else
@@ -47,7 +47,6 @@ namespace Battleships
                         "player name using the third argument on the command line?");
                     RandomisePlayerName();
                 }
-
             }
             else
             {
@@ -61,40 +60,21 @@ namespace Battleships
                 $"Randomised TCP port: {RandomTcpPort}\nPlayer name: {PlayerName}\n");
 
             // Game search
-
             do
             {
                 Broadcast.Connect();
-            } while (PlayerNo == 0);
+            } while (PlayerNo == 0); // looping here is really just a backup that should never have to happen
+
             // at this point, we cannot yet guarantee that the TCP connection has fully initialised!
-
-            // Console.WriteLine("No existing game found; hosting new game");
-            // Console.WriteLine("Waiting for opponent to join... <NOT IMPLEMENTED>");
+            while (!OpponentConnection.TcpEstablished) Thread.Sleep(1000); // wait until handshake is fully completed
             Console.WriteLine($"\nNow playing as player #{PlayerNo}");
+            Console.WriteLine($"Your opponent is: {OpponentName}");
 
+            // main game method
             UserInterface.Play(PlayerNo == 1);
+
+            // shutdown after game finished
             Shutdown();
-        }
-
-        public static void Connect() // TODO: sample code, delete when stuff is working
-        {
-            UdpClient udpClient = new UdpClient();
-            udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, BcPort));
-
-            var from = new IPEndPoint(0, 0);
-            var task = Task.Run(() =>
-            {
-                while (true)
-                {
-                    var recvBuffer = udpClient.Receive(ref from);
-                    Console.WriteLine(Encoding.UTF8.GetString(recvBuffer));
-                }
-            });
-
-            var data = Encoding.UTF8.GetBytes("ABCD");
-            udpClient.Send(data, data.Length, "255.255.255.255", BcPort);
-
-            task.Wait();
         }
 
         private static void RandomisePlayerName()

@@ -20,10 +20,6 @@ namespace Battleships
             Console.WriteLine("You may send the message 'END' at any time to end the game.");
             Console.ResetColor();
 
-            // static variable re-initialisation
-            StillPlaying = true;
-            turnNo = 1;
-
             // setup ship placement
             // PlaceShipsManually();
             PlaceShipsRandomly();
@@ -53,21 +49,22 @@ namespace Battleships
                 if (Battleships.GameOver) GameOver(yourTurn); // check for game over
                 turnNo++;
             }
-            Console.WriteLine("Game has ended. Thanks for playing!");
         }
 
         public static void GameOver(bool yourTurn) 
         {
             if (yourTurn) 
-            {
+            {   
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Game over, you win! Thanks for playing.");
+                Console.WriteLine($"Game over, you win against {Battleships.OpponentName}!" + 
+                    $"\nThanks for playing, {Battleships.PlayerName}.");
                 Console.ResetColor();
             } 
             else 
             {
                 Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine("Game over, you lose! Thanks for playing.");
+                Console.WriteLine($"Game over, you lose to {Battleships.OpponentName}!" + 
+                    $"\nThanks for playing, {Battleships.PlayerName}.");
                 Console.ResetColor();
             }
             Battleships.Shutdown();
@@ -84,7 +81,7 @@ namespace Battleships
 
             while (!validInput) // receive user input
             {
-                Console.Write("Enter the coordinates of the square you would like to shoot at:\n\t>");
+                Console.Write("Enter the coordinates of the cell you would like to shoot at:\n\t>");
                 shot = Console.ReadLine()!;
 
                 // validate input
@@ -135,7 +132,7 @@ namespace Battleships
 
         public static void OpponentsTurn()
         {
-            Console.WriteLine("Waiting for opponent to shoot...");
+            Console.WriteLine($"Waiting for {Battleships.OpponentName} to shoot...");
             string result = OpponentConnection.OpponentFiresAtUs();
             Console.WriteLine($"Opponent fired at us: {result}");
         }

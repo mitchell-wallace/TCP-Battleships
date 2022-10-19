@@ -46,7 +46,7 @@ namespace Battleships
             if (extraDebug) Console.WriteLine("Looking for existing game host...");
             var asyncResult = udpClient.BeginReceive(new AsyncCallback(ReceiveCallback), udpState);
 
-            Console.WriteLine("\nListening.....");
+            Console.WriteLine("Listening.....");
             asyncResult.AsyncWaitHandle.WaitOne(ttw);
             if (asyncResult.IsCompleted)
             {
@@ -84,6 +84,7 @@ namespace Battleships
 
             try
             {
+                Console.WriteLine("Broadcasting...");
                 var data = Encoding.UTF8.GetBytes($"NEW PLAYER:{Battleships.RandomTcpPort}");
                 udpClient.Send(data, data.Length, "255.255.255.255", Battleships.BcPort);
             }

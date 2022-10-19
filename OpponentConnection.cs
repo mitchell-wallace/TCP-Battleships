@@ -5,16 +5,14 @@ using System.Diagnostics;
 
 namespace Battleships
 {
-
     internal class OpponentConnection
-    { // TODO: implement actual connection to opponent
-
-        private static int counter = 0;
+    {
         private static TcpClient? tcpClient = null;
         private static IPEndPoint? opponentEndpoint = null;
         private static NetworkStream? tcpStream = null;
-        private static bool ready = false;
-
+        private static bool sendReceiveReady = false; // true when we are ready to use Send() and Receive()
+        public static bool TcpEstablished = false; // true when all components of handshake completed
+        private static int bufferSize = 256; // it's small but it's enough
         public static string FireAtOpponent(int column, int row)
         {
             string result = "";
@@ -54,7 +52,6 @@ namespace Battleships
             try 
             {
                 string receiveString = Receive();
-                // Console.WriteLine($"OpponentFiresAtUs(): {receiveString}");
 
                 if (receiveString == "END") 
                 {
@@ -64,7 +61,6 @@ namespace Battleships
 
                 int column = CharTransform.ColumnNo(receiveString[5]);
                 int row = int.Parse(receiveString[6..]) - 1;
-
                 char resultChar = UserInterface.gg.ReceiveShot(column, row);
 
                 if (resultChar == 'X')
@@ -97,14 +93,7 @@ namespace Battleships
                 Battleships.Shutdown(); // if exceptions come back to here, the connection is proper dead
             }
 
-
-
             return result;
-        }
-
-        public static void ResponseToOpponentShot(string response)
-        {
-            // TODO: respond to opponent with MISS, HIT, SUNK messages
         }
 
         public static async void InitialListen() // run as thread
@@ -113,7 +102,6 @@ namespace Battleships
 
             await Task.Run(async () =>
             {
-                // Console.WriteLine("====> Executing OpponentConnection.InitialListen() <====");
                 opponentEndpoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
                 TcpListener listener = new(opponentEndpoint);
 
@@ -125,16 +113,14 @@ namespace Battleships
                     tcpStream = handler.GetStream();
 
                     // *~*~* RECEIVING MESSAGE *~*~*
-                    var buffer = new byte[1_024];
+                    var buffer = new byte[bufferSize];
                     int received = await tcpStream.ReadAsync(buffer);
 
                     message = Encoding.UTF8.GetString(buffer, 0, received);
                     // Console.WriteLine($"Message received: \"{message}\"");
 
                     tcpClient = handler;
-                    ready = true;
-
-                    // TODO: actually check the logic that the game starts after this point?!?!
+                    sendReceiveReady = true;
                 }
                 catch (Exception e) {
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -147,20 +133,23 @@ namespace Battleships
                 }
             });
 
-            if (message == "GAME START")
+            if (message.Length > 11 && message[0..11] == "GAME START:")
             {
-                // Console.WriteLine("====> HostListen complete <====");
+                Battleships.OpponentName = message[11..];
                 Battleships.PlayerNo = 1;
                 Broadcast.contacted = true; // this will break the UDP listen-send loop
+                Send($"GAME START:{Battleships.PlayerName}");
+                TcpEstablished = true;
             }
         }
  
         public static string Receive()
         {
-            if (!ready) { // this will not be called until after TCP has begun to be established; wait should be short!
+            if (!sendReceiveReady) { // this will not be called until after TCP has begun to be established; wait should be short!
                 for (int i = 0; i <= 240; i++) {
-                    if (ready) break;
-                    // if (i%30 == 0) Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
+                    if (sendReceiveReady) break;
+                    if (i != 0 && i%60 == 0) 
+                        Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
                     if (i == 240) 
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -183,7 +172,7 @@ namespace Battleships
             try
             {
                 // *~*~* RECEIVING MESSAGE *~*~*
-                var buffer = new byte[1_024];
+                var buffer = new byte[bufferSize];
                 int received = tcpStream.Read(buffer);
 
                 message = Encoding.UTF8.GetString(buffer, 0, received);
@@ -203,10 +192,11 @@ namespace Battleships
         }
 
         public static async void Send(string msg) {
-            if (!ready) { // this will not be called until after TCP has begun to be established; wait should be short!
+            if (!sendReceiveReady) { // this will not be called until after TCP has begun to be established; wait should be short!
                 for (int i = 0; i <= 240; i++) {
-                    if (ready) break;
-                    if (i%30 == 0) Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
+                    if (sendReceiveReady) break;
+                    if (i != 0 && i%60 == 0) 
+                        Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
                     if (i == 240) Console.WriteLine("Message timeout! Critical connection error.");
                     Thread.Sleep(1000);
                 }
@@ -221,11 +211,8 @@ namespace Battleships
             {
                 // *~*~* SENDING MESSAGE *~*~*
                 NetworkStream stream = new NetworkStream(tcpClient.Client);
-
                 var messageBytes = Encoding.UTF8.GetBytes(msg);
                 await stream.WriteAsync(messageBytes);
-
-                // Console.WriteLine($"Sent message: \"{msg}\"");
             }
             catch (Exception e)
             {
@@ -235,7 +222,6 @@ namespace Battleships
                 Console.ResetColor();
                 Battleships.Shutdown();
             }
-
         }
 
         public static async void InitiateAsClient()
@@ -249,14 +235,16 @@ namespace Battleships
                 tcpStream = client.GetStream();
 
                 // *~*~* SENDING MESSAGE *~*~*
-                var message = "GAME START";
+                var message = $"GAME START:{Battleships.PlayerName}";
                 var messageBytes = Encoding.UTF8.GetBytes(message);
                 await tcpStream.WriteAsync(messageBytes);
 
-                // Console.WriteLine($"Sent message: \"{message}\"");
-
                 tcpClient = client;
-                ready = true;
+                sendReceiveReady = true;
+
+                // wait for response with playername
+                Battleships.OpponentName = Receive()[11..];
+                TcpEstablished = true;
             }
             catch (Exception e)
             {
