@@ -21,6 +21,11 @@ namespace Battleships
             return false;
         }
 
+        public static void Close()
+        {
+            if (tcpClient is not null) tcpClient.Close();
+        }
+
         public static async void HostListen()
         {
             var receiveString = await TcpInitialListenThread();
@@ -84,8 +89,10 @@ namespace Battleships
             try
             {
                 // *~*~* SENDING MESSAGE *~*~*
+                NetworkStream stream = new NetworkStream(tcpClient.Client);
+
                 var messageBytes = Encoding.UTF8.GetBytes(msg);
-                await tcpStream.WriteAsync(messageBytes);
+                await stream.WriteAsync(messageBytes);
 
                 Console.WriteLine($"Sent message: \"{msg}\"");
             }
@@ -94,6 +101,7 @@ namespace Battleships
                 Console.WriteLine($"An error occurred while sending a message to Player 1: \n" + 
                     $"Message text: {msg}\n{e}");
                 Console.WriteLine("\n!IMPORTANT! Restart this client to reattempt connection.");
+                Battleships.Shutdown();
             }
 
         }
@@ -102,7 +110,7 @@ namespace Battleships
         {
             opponentEndpoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
 
-            using TcpClient client = new();
+            TcpClient client = new();
             try
             {
                 await client.ConnectAsync(opponentEndpoint);

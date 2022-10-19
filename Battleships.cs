@@ -72,7 +72,7 @@ namespace Battleships
             OpponentConnection.HostListen();
 
             UserInterface.Play(PlayerNo == 1);
-
+            Shutdown();
         }
 
         public static void Connect() // TODO: sample code, delete when stuff is working
@@ -101,9 +101,10 @@ namespace Battleships
             PlayerName = "Battleships_Player" + new Random().Next(100, 999);
         }
 
-
+        public static void Shutdown() 
+        {
+            OpponentConnection.Close();
+            Environment.Exit(0);
+        }
     }
-
-
-
 }
