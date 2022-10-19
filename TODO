@@ -3,6 +3,7 @@
     If set to true in OpponentConnection, playernumber is set to 1
 ✔ Place ships randomly @done(22-10-18 20:48)
 ✔ Actually start game for both players @done(22-10-18 21:01)
+☐ how do we not dispose tcpStream??
 ☐ Implement fire, hit, sunk messages
 ☐ Have players actually fire at each other
 ✔ Improve random placement @done(22-10-19 12:04)

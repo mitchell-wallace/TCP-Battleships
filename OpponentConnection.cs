@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Diagnostics;
 
 namespace Battleships
 {
@@ -9,6 +10,10 @@ namespace Battleships
     { // TODO: implement actual connection to opponent
 
         private static int counter = 0;
+        private static TcpClient? tcpClient = null;
+        private static IPEndPoint? opponentEndpoint = null;
+        private static NetworkStream? tcpStream = null;
+        private static bool ready = false;
 
         public static bool FireAtOpponent(int column, int row)
         {
@@ -18,7 +23,7 @@ namespace Battleships
 
         public static async void HostListen()
         {
-            var receiveString = await TcpListenThread();
+            var receiveString = await TcpInitialListenThread();
             if (receiveString == "GAME START")
             {
                 Console.WriteLine("====> HostListen complete <====");
@@ -27,33 +32,31 @@ namespace Battleships
             }
         }
 
-        public static async Task<string> TcpListenThread() // do we constantly listen, or only when we expect a message???
-                                                           // I think only when we expect a message, and then we get TcpListen to return the message
+        public static async Task<string> TcpInitialListenThread()
         {
             string message = "";
             await Task.Run(async () =>
-            { // PLACEHOLDWER
-                // PLACEHOLDER
-                // FIXME we're running this as a thread instead so this whole method can probs
-                // be written as synchronous
-
+            {
                 Console.WriteLine("====> Executing OpponentConnection.ListenAsHost() <====");
-                var ipEndPoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
-                TcpListener listener = new(ipEndPoint);
+                opponentEndpoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
+                TcpListener listener = new(opponentEndpoint);
 
                 try
                 {
                     listener.Start();
 
-                    using TcpClient handler = await listener.AcceptTcpClientAsync();
-                    await using NetworkStream stream = handler.GetStream();
+                    TcpClient handler = await listener.AcceptTcpClientAsync();
+                    tcpStream = handler.GetStream();
 
                     // *~*~* RECEIVING MESSAGE *~*~*
                     var buffer = new byte[1_024];
-                    int received = await stream.ReadAsync(buffer);
+                    int received = await tcpStream.ReadAsync(buffer);
 
                     message = Encoding.UTF8.GetString(buffer, 0, received);
                     Console.WriteLine($"Message received: \"{message}\"");
+
+                    tcpClient = handler;
+                    ready = true;
 
                     // TODO: actually check the logic that the game starts after this point?!?!
                 }
@@ -61,36 +64,59 @@ namespace Battleships
                 {
                     listener.Stop();
                 }
-
-
             });
             return message;
         }
 
+        public static async void SendTcpMsg(string msg) {
+            if (!ready) { // this will not be called until after TCP has begun to be established; wait should be short!
+                for (int i = 0; i <= 240; i++) {
+                    if (ready) break;
+                    if (i%30 == 0) Console.WriteLine("INFO: TCP message send delayed; awaiting ready flag");
+                    if (i == 240) Console.WriteLine("Message timeout! Critical connection error.");
+                    Thread.Sleep(1000);
+                }
+            }
+            Debug.Assert(tcpClient is not null, "tcpClient has not initialised!");
+            Debug.Assert(opponentEndpoint is not null, "opponentEndpoint has not initialised!");
+            Debug.Assert(tcpStream is not null, "tcpStream has not initialised!");
+
+            try
+            {
+                // *~*~* SENDING MESSAGE *~*~*
+                var messageBytes = Encoding.UTF8.GetBytes(msg);
+                await tcpStream.WriteAsync(messageBytes);
+
+                Console.WriteLine($"Sent message: \"{msg}\"");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occurred while sending a message to Player 1: \n" + 
+                    $"Message text: {msg}\n{e}");
+                Console.WriteLine("\n!IMPORTANT! Restart this client to reattempt connection.");
+            }
+
+        }
+
         public static async void InitiateAsClient()
         {
-            var opponentEndPoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
+            opponentEndpoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
 
             using TcpClient client = new();
             try
             {
-                await client.ConnectAsync(opponentEndPoint);
-                await using NetworkStream stream = client.GetStream();
+                await client.ConnectAsync(opponentEndpoint);
+                tcpStream = client.GetStream();
 
                 // *~*~* SENDING MESSAGE *~*~*
                 var message = "GAME START";
                 var messageBytes = Encoding.UTF8.GetBytes(message);
-                await stream.WriteAsync(messageBytes);
+                await tcpStream.WriteAsync(messageBytes);
 
                 Console.WriteLine($"Sent message: \"{message}\"");
 
-                // *~*~* SENDING SECOND MESSAGE *~*~*
-                Thread.Sleep(1500);
-                message = "SECOND MESSAGE";
-                messageBytes = Encoding.UTF8.GetBytes(message);
-                await stream.WriteAsync(messageBytes);
-
-                Console.WriteLine($"Sent message: \"{message}\"");
+                tcpClient = client;
+                ready = true;
             }
             catch (Exception e)
             {

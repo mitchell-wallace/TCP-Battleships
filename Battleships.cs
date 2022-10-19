@@ -62,10 +62,14 @@ namespace Battleships
             {
                 Broadcast.Connect();
             } while (PlayerNo == 0);
+            // at this point, we cannot yet guarantee that the TCP connection has fully initialised!
 
             // Console.WriteLine("No existing game found; hosting new game");
             // Console.WriteLine("Waiting for opponent to join... <NOT IMPLEMENTED>");
             Console.WriteLine($"\nNow playing as player #{PlayerNo}");
+
+            OpponentConnection.SendTcpMsg("FIRE:NewGuy123");
+            OpponentConnection.HostListen();
 
             UserInterface.Play(PlayerNo == 1);
 
