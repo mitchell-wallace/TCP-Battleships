@@ -11,8 +11,8 @@ namespace Battleships
         public static IPAddress BcAddress = IPAddress.Parse("127.0.0.1"); // UDP Broadcast Address; overwritten by arguments
         public static IPAddress OpponentAddress = IPAddress.Parse("127.0.0.1"); // TCP opponent address
         public static int BcPort = 9000; // UDP Broadcast Port
-        public static int RandomTcpPort = 9001; // Randomised TCP port decided by this instance
-        public static int AgreedTcpPort = 9001; // Agreed-upon TCP port by both instances
+        public static int RandomTcpPort = 5001; // Randomised TCP port decided by this instance
+        public static int AgreedTcpPort = 5001; // Agreed-upon TCP port by both instances
         public static int PlayerNo = 0; // 0 = unassigned; 1 = host; 2 = client
         public static string PlayerName = "Battleships Player"; // initialise to a placeholder because it feels safer this way
         public static string OpponentName = "Battleships Player"; // initialise to a placeholder because it feels safer this way
@@ -24,7 +24,7 @@ namespace Battleships
             Console.ResetColor();
 
             // Set random TCP port
-            RandomTcpPort = new Random().Next(1024, 65000); // retain this even after setting agreed port,
+            RandomTcpPort = new Random().Next(5000, 6000); // retain this even after setting agreed port,
                                                             // for filtering UDP messages we sent. probably redundant.
             AgreedTcpPort = RandomTcpPort; // assume we are host; we will overwrite otherwise
 

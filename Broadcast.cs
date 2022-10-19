@@ -16,7 +16,7 @@ namespace Battleships
         private static UdpState? udpState;
         public static bool contacted = false; // indicates whether a broadcast or TCP message has been received
         private static bool extraDebug = false; // optionally print extra debug info until first execution of Send()
-        private static TimeSpan ttw = TimeSpan.FromSeconds(6);
+        private static TimeSpan ttw = TimeSpan.FromSeconds(30);
         static byte[] bytes = new byte[2048]; // for listen2 and receive2
         public static void Connect()
         {
