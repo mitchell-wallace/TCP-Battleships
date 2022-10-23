@@ -14,6 +14,7 @@ namespace Battleships
         public static bool TcpEstablished = false; // true when all components of handshake completed
         private static int bufferSize = 256; // it's small but it's enough
         public static string FireAtOpponent(int column, int row)
+            // send FIRE message to opponent and listen for result
         {
             string result = "";
             try 
@@ -40,11 +41,13 @@ namespace Battleships
         }
 
         public static void Close()
+            // close connection in a clean shutdown
         {
             if (tcpClient is not null) tcpClient.Close();
         }
 
         public static string OpponentFiresAtUs()
+            // listen to FIRE message from opponent and respond with result
         {
             string result = "";
 
@@ -94,11 +97,12 @@ namespace Battleships
             return result;
         }
 
-        public static async void InitialListen() // run as thread
+        public static async void InitialListen() 
+            // run as thread; listen for another instance connecting to your broadcasted TCP port
         {
             string message = "";
 
-            await Task.Run(async () =>
+            await Task.Run(async () => // probably redundant when we run this as a thread already
             {
                 opponentEndpoint = new IPEndPoint(IPAddress.Any, Battleships.AgreedTcpPort);
                 TcpListener listener = new(opponentEndpoint);
@@ -140,6 +144,7 @@ namespace Battleships
         }
  
         public static string Receive()
+            // wait to receive a TCP message from your opponent; this is intentionally synchronous
         {
             if (!sendReceiveReady) { // this will not be called until after TCP has begun to be established; wait should be short!
                 for (int i = 0; i <= 240; i++) {
@@ -186,7 +191,9 @@ namespace Battleships
             return message;
         }
 
-        public static async void Send(string msg) {
+        public static async void Send(string msg) 
+            // send a message to your opponent
+        {
             if (!sendReceiveReady) { // this will not be called until after TCP has begun to be established; wait should be short!
                 for (int i = 0; i <= 240; i++) {
                     if (sendReceiveReady) break;
@@ -220,6 +227,7 @@ namespace Battleships
         }
 
         public static async void InitiateAsClient()
+            // after receiving the broadcast from another instance, broadcast a message on TCP
         {
             opponentEndpoint = new IPEndPoint(Battleships.OpponentAddress, Battleships.AgreedTcpPort);
 

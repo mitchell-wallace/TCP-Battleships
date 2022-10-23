@@ -25,7 +25,7 @@ namespace Battleships
                 // for filtering UDP messages we sent. probably redundant.
             AgreedTcpPort = RandomTcpPort; // assume we are host; we will overwrite otherwise
 
-            // Broadcast settings
+            // Broadcast and playername settings
             if (args.Length > 1)
             {
                 BcAddress = IPAddress.Parse(args[0]);
@@ -42,16 +42,18 @@ namespace Battleships
                 {
                     Console.WriteLine("Welcome! Did you know you can set a custom " +
                         "player name using the third argument on the command line?");
-                    RandomisePlayerName();
+                    RandomisePlayerName(); // assign playername with random int if none manually chosen
                 }
             }
             else
             {
+                // if no arguments received, default to 127.0.0.1 and port 5001. convenient for testing.
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("No command line arguments received; please specify broadcast address and port." +
                 "\nAttempting to play using default settings; press CTRL+C to cancel.");
                 Console.ResetColor();
-                RandomisePlayerName();
+
+                RandomisePlayerName(); // assign playername with random int if none manually chosen
             }
             Console.WriteLine($"Broadcast address: {BcAddress} | Broadcast port: {BcPort} | " +
                 $"Randomised TCP port: {RandomTcpPort}\nPlayer name: {PlayerName}\n");
@@ -79,7 +81,9 @@ namespace Battleships
             PlayerName = "Battleships_Player" + new Random().Next(100, 999);
         }
 
-        public static void Shutdown() 
+        public static void Shutdown()
+            // there isn't much to do in a clean shutdown but we want to make sure its consistent
+            // across all possible exit conditions
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("\nShutting down game...");

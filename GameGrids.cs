@@ -40,27 +40,15 @@ namespace Battleships
             }
         }
 
-        public void Reset()
-        {
-            firingGrid = new char[10, 10];
-            homeGrid = new char[10, 10];
-            for (int i = 0; i < 10; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    firingGrid[i, j] = ' ';
-                    homeGrid[i, j] = ' ';
-                }
-            }
-        }
-
         public void FireShot(int column, int row, bool success)
-        { // mark the result of a shot against your opponent
+            // store the result of a shot against your opponent
+        {
             if (success) firingGrid[column, row] = 'X';
             else firingGrid[column, row] = '~';
         }
 
         public bool IsValidTarget(int column, int row)
+            // check if a cell has already been fired at
         {
             if (firingGrid[column, row] != ' ')
             {
@@ -142,6 +130,7 @@ namespace Battleships
         }
 
         public void PlaceShip(int column, int row, bool isHorizontal, char type)
+            // place a ship in your home grid
         {
             int size = CharTransform.ShipSize(type);
 
@@ -155,6 +144,7 @@ namespace Battleships
         }
 
         public char GetCell(int column, int row, bool isHomeGrid = true)
+            // return the contents of a cell
         {
             if (isHomeGrid) return homeGrid[column, row];
             else return firingGrid[column, row];

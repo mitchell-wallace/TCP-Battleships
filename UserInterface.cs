@@ -1,27 +1,24 @@
-using System.Data.Common;
 using System.Text.RegularExpressions;
 
 namespace Battleships
 {
-
     internal class UserInterface
     {
-
         static bool StillPlaying = true; // loop break variable
         static string whoseTurn = ""; // solely for display
         static int turnNo = 1; // primarily for display; simpler to start from 1
         public static GameGrids gg = new GameGrids(); // data structure for game data
-        static Regex ShootingRegex = new Regex(@"^[A-J][1-9]0?$"); // regex pattern for validating shooting input
-        static Regex PlacementRegex = new Regex(@"^[A-J](10|[1-9])$"); // regex pattern for validating ship placement input
+        static Regex ShootingRegex = new Regex(@"^[A-J](10|[1-9])$"); // regex pattern for validating shooting input
+        static Regex PlacementRegex = new Regex(@"^[A-J](10|[1-9])(VH)$"); // regex pattern for validating ship placement input
 
         public static void Play(bool isPlayer1)
-        { // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
+            // isPlayer1 determines whether odd-numbered turns or even-numbered turns are our turn to shoot
+        { 
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("You may send the message 'END' at any time to end the game.\n");
             Console.ResetColor();
 
-            // setup ship placement
-            // PlaceShipsManually();
+            // place ships
             PlaceShipsRandomly();
 
             while (StillPlaying)
@@ -51,7 +48,8 @@ namespace Battleships
             }
         }
 
-        public static void GameOver(bool yourTurn) 
+        public static void GameOver(bool yourTurn)
+            // for game over, display farewell message and shut down gracefully
         {
             if (yourTurn) 
             {   
@@ -72,6 +70,7 @@ namespace Battleships
 
 
         public static void YourTurn()
+            // logic for when this instance is firing a shot
         {
             bool validInput = false;
             string shot = "";
@@ -84,21 +83,21 @@ namespace Battleships
                 Console.Write("Enter the coordinates of the cell you would like to shoot at:\n\t>");
                 shot = Console.ReadLine()!;
 
-                // validate input
-
-                // check for null
+                    // -- validate input --
+                // 1. check for null
                 if (shot is null) continue;
 
-                // check for END command
+                // 2. check for END command
                 shot = shot.ToUpper().Replace(" ", "").Replace("\t", ""); // cleanup string
                 if (shot == "END" || shot == "'END'")
                 {
-                    Console.WriteLine("Game is being cancelled..."); // TODO: send message to opponent?
+                    Console.WriteLine("Game is being cancelled...");
+                    OpponentConnection.Send("END");
                     StillPlaying = false;
                     return;
                 }
 
-                // regex validation
+                // 3. regex validation
                 if (!ShootingRegex.IsMatch(shot))
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
@@ -108,7 +107,7 @@ namespace Battleships
                     continue;
                 }
 
-                // duplicate shot check
+                // 4. duplicate shot check
                 column = CharTransform.ColumnNo(shot[0]);
                 row = int.Parse(shot[1..].ToString()) - 1;
                 if (gg.IsValidTarget(column, row)) validInput = true;
@@ -118,19 +117,15 @@ namespace Battleships
                     Console.WriteLine("You have already fired at this square! Try another target.");
                     Console.ResetColor();
                 } 
-
             }
-
-            // parse input (? why did I write this?)
 
             // send message
             string response = OpponentConnection.FireAtOpponent(column, row);
-            Console.WriteLine($"You fired at opponent: {response}");
-
-            Console.WriteLine();
+            Console.WriteLine($"You fired at opponent: {response}\n");
         }
 
         public static void OpponentsTurn()
+            // logic for when opponent is firing a shot
         {
             Console.WriteLine($"Waiting for {Battleships.OpponentName} to shoot...");
             string result = OpponentConnection.OpponentFiresAtUs();
@@ -138,9 +133,10 @@ namespace Battleships
         }
 
         public static void PlaceShipsRandomly()
+            // randomly place your ships on the board
         {
-            gg.Reset();
-            Random rand = new();
+            gg = new(); // useful for when testing iterations of random placement
+            Random rand = new(); // we reuse the same Random object for efficiency
 
             // Placing Aircraft Carrier
             PlaceOneShipRandomly('A', rand);
@@ -153,13 +149,15 @@ namespace Battleships
             // Placing Submarine
             PlaceOneShipRandomly('S', rand);
 
+            // print ship placement when finished
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(gg.ToString(true));
             Console.ResetColor();
         }
 
         private static void PlaceOneShipRandomly(char type, Random rand)
-        { // reusing rand for efficiency
+            // random placement for single ship
+        { 
             bool isHorizontal, positionFound;
             int row, column, size;
 
@@ -169,7 +167,8 @@ namespace Battleships
                 size = CharTransform.ShipSize(type);
                 positionFound = true; // easier to default to true and change if not
 
-                if (isHorizontal)
+                // set random coordinates
+                if (isHorizontal) // valid positions are different for horizontal and vertical
                 {
                     row = rand.Next(10);
                     column = rand.Next(10 - size);
@@ -180,6 +179,7 @@ namespace Battleships
                     row = rand.Next(10 - size);
                 }
 
+                // check if random coordinates are valid
                 for (int i = 0; i < size; i++)
                 {
                     if (isHorizontal) // we need to split horiz/vert because they iterate cells differently
@@ -197,14 +197,16 @@ namespace Battleships
                         }
                     }
                 }
-            } while (!positionFound);
+            } while (!positionFound); // if placement is not valid, select new random position
 
+            // store position in GameGrids object
             gg.PlaceShip(column, row, isHorizontal, type);
         }
 
-        public static void PlaceShipsManually() // TODO: the spec requires random placement
+        public static void PlaceShipsManually()
+            // not required by spec but I thought this was fun
         {
-            gg.Reset();
+            gg = new(); // useful for when testing iterations of random placement
 
             // info display
             string info1 = $"======= Placing ships : {Battleships.PlayerName} =======";
@@ -248,12 +250,12 @@ namespace Battleships
                 Console.Write("Enter the desired position:\n\t>");
                 pos = Console.ReadLine()!;
 
-                // validate input
+                    // -- validate input --
 
-                // check for null
+                // 1. check for null
                 if (pos is null) continue;
 
-                // regex validation
+                // 2. regex validation
                 pos = pos.ToUpper().Replace(" ", "").Replace("\t", "");
                 if (!PlacementRegex.IsMatch(pos))
                 {
@@ -263,7 +265,7 @@ namespace Battleships
                     continue;
                 }
 
-                // position clash check
+                // 3. position clash check
                 column = CharTransform.ColumnNo(pos[0]);
                 row = int.Parse(pos[1..^1].ToString()) - 1;
                 isHorizontal = (pos[^1] == 'H');
@@ -296,7 +298,10 @@ namespace Battleships
                 if (!positionError) validInput = true;
             }
 
+            // store position in GameGrids object
             gg.PlaceShip(column, row, isHorizontal, type);
+
+            // display placement of ships on console
             Console.WriteLine($"{CharTransform.ShipType(type)} placed successfully!\n\n" +
                 $"{gg.ToString(true)}");
         }
