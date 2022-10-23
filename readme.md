@@ -7,6 +7,8 @@ https://www.dotnetthailand.com/programming-cookbook/wsl-powershell-useful-script
 using localhost:5001 for both instances
 Visual studio is not necessary, thought it does work
 
+The PowerShell instance and the WSL instance will need to be pointed to different folders containing the same source code
+
 Running both on the same OS without virtualisation yields SocketException 10048
 It's probably possible to fix this but I didn't find a solution in a reasonable space of time
 
