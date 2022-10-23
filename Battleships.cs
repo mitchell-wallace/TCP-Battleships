@@ -1,8 +1,4 @@
-
-
-using System.Net.Sockets;
 using System.Net;
-using System.Text;
 
 namespace Battleships
 {
@@ -24,15 +20,16 @@ namespace Battleships
             Console.ResetColor();
 
             // Set random TCP port
-            RandomTcpPort = new Random().Next(5000, 6000); // retain this even after setting agreed port,
-                                                            // for filtering UDP messages we sent. probably redundant.
+            RandomTcpPort = new Random().Next(5000, 6000); 
+                // retain this even after setting agreed port,
+                // for filtering UDP messages we sent. probably redundant.
             AgreedTcpPort = RandomTcpPort; // assume we are host; we will overwrite otherwise
 
             // Broadcast settings
             if (args.Length > 1)
             {
                 BcAddress = IPAddress.Parse(args[0]);
-                OpponentAddress = BcAddress; // FIXME verify if this assumption is correct
+                OpponentAddress = BcAddress;
                 BcPort = int.Parse(args[1]);
                 if (args.Length > 2)
                 {

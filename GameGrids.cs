@@ -69,11 +69,12 @@ namespace Battleships
             return true;
         }
 
-        public char ReceiveShot(int column, int row) // return: true is HIT, false is MISS
-        { // use this method when your opponent is shooting at your ships
-
-            char result = ' ';
-            // check if hit and store result
+        public char ReceiveShot(int column, int row) // return: 'X' is HIT, '~' is MISS,
+            // uppercase letter is sunk on ship matching that char,
+            // lowershase letter is sunk and game over
+            // use this method when your opponent is shooting at your ships
+        {
+            char result = ' '; // check if hit and store result
             if (homeGrid[column, row] == ' ')
             {
                 homeGrid[column, row] = '~'; // mark as missed shot by opponent
@@ -131,8 +132,9 @@ namespace Battleships
             }
 
             if (aircraftCarrierCells + battleshipCells + cruiserCells + patrolBoatCells + submarineCells == -5) 
-            { // if all five indicate -5, then all 5 have been sunk, and we send "GAME OVER"
-              // we also need to indicate which ship was sunk, so we do this with lowercase to keep to a single character
+                // if all five indicate -5, then all 5 have been sunk, and we send "GAME OVER"
+                // we also need to indicate which ship was sunk, so we do this with lowercase to keep to a single character
+            {
                 result = result.ToString().ToLower()[0];
             }
 
@@ -159,6 +161,7 @@ namespace Battleships
         }
 
         public override string ToString()
+            // returns both game grids as a string for display
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("   ~~~ Y O U R    S H I P S ~~~            ~~~  OPPONENT'S SHIPS  ~~~\n");
@@ -187,7 +190,8 @@ namespace Battleships
             return sb.ToString();
         }
 
-        public string ToString(bool isHomeGrid) // for displaying only a single grid
+        public string ToString(bool isHomeGrid) 
+            // overload for displaying only a single grid
         {
             StringBuilder sb = new StringBuilder();
 
@@ -197,7 +201,6 @@ namespace Battleships
                 sb.Append("   A  B  C  D  E  F  G  H  I  J\n");
                 for (int i = 0; i < 10; i++)
                 {
-
                     sb.Append((i + 1) + " ");
                     if (i != 9) sb.Append(" ");
 
@@ -205,7 +208,6 @@ namespace Battleships
                     {
                         sb.Append(homeGrid[j, i] + "  ");
                     }
-
                     sb.Append("\n");
                 }
             }
@@ -215,7 +217,6 @@ namespace Battleships
                 sb.Append("   A  B  C  D  E  F  G  H  I  J\n");
                 for (int i = 0; i < 10; i++)
                 {
-
                     sb.Append("      " + (i + 1) + " ");
                     if (i != 9) sb.Append(" ");
 
@@ -223,11 +224,9 @@ namespace Battleships
                     {
                         sb.Append(firingGrid[j, i] + "  ");
                     }
-
                     sb.Append("\n");
                 }
             }
-
             return sb.ToString();
         }
     }

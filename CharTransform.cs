@@ -3,6 +3,7 @@
     internal class CharTransform
     {
         public static int ColumnNo(char column)
+            // convert column letter to column index
         {
             switch (column)
             {
@@ -21,6 +22,7 @@
         }
 
         public static char ColumnChar(int column)
+            // convert column index to column letter
         {
             switch (column)
             {
@@ -34,11 +36,12 @@
                 case 7: return 'H';
                 case 8: return 'I';
                 case 9: return 'J';
-                default: return '?'; // -1 indicates invalid
+                default: return '?';
             }
         }
 
         public static string ShipType(char type)
+            // convert ship type char to ship type name
         {
             switch (type)
             {
@@ -52,6 +55,7 @@
         }
 
         public static int ShipSize(char type)
+            // convert ship type char to ship size
         {
             switch (type)
             {

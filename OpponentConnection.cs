@@ -36,7 +36,6 @@ namespace Battleships
                 Console.ResetColor();
                 Battleships.Shutdown(); // if exceptions come back to here, the connection is proper dead
             }
-
             return result;
         }
 
@@ -52,7 +51,6 @@ namespace Battleships
             try 
             {
                 string receiveString = Receive();
-
                 if (receiveString == "END") 
                 {
                     Console.WriteLine("Opponent has left the game. Thanks for playing!");
@@ -115,9 +113,7 @@ namespace Battleships
                     // *~*~* RECEIVING MESSAGE *~*~*
                     var buffer = new byte[bufferSize];
                     int received = await tcpStream.ReadAsync(buffer);
-
                     message = Encoding.UTF8.GetString(buffer, 0, received);
-                    // Console.WriteLine($"Message received: \"{message}\"");
 
                     tcpClient = handler;
                     sendReceiveReady = true;
@@ -176,7 +172,6 @@ namespace Battleships
                 int received = tcpStream.Read(buffer);
 
                 message = Encoding.UTF8.GetString(buffer, 0, received);
-                // Console.WriteLine($"Message received: \"{message}\"");
             }
             catch (Exception e) {
                 Console.ForegroundColor = ConsoleColor.Red;
